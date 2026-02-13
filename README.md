@@ -1,4 +1,6 @@
+
 # **Kumo: A Modular Serverless Security Simulator**
+For CCGRID 2026 artifact reproduction instructions, see ARTIFACT.md.
 
 Kumo is a modular, event-driven simulator for evaluating **performance and security** in multi-tenant serverless platforms.
 It models:
