@@ -7,10 +7,6 @@ Kumo: A Security-Focused Serverless Cloud Simulator
 Artifact DOI:
 https://doi.org/10.5281/zenodo.18635971
 
-Development repository:
-https://github.com/YoungKameSennin/kumo
-
----
 
 ## 1. Quick Start (Reproduce All Results)
 
@@ -25,8 +21,6 @@ pip install -r requirements.txt
 ### Reproduce all experiments and figures
 
 make reproduce
-
----
 
 ## 2. Expected Outputs
 
@@ -46,7 +40,7 @@ Figures in `figs/`
 
 Estimated runtime: 30–60 minutes on a commodity desktop.
 
----
+
 
 ## 3. System Requirements
 
@@ -65,7 +59,7 @@ Install Python dependencies:
 
 pip install -r requirements.txt
 
----
+
 
 ## 4. Repository Structure
 
@@ -75,7 +69,7 @@ plot/       Python plotting scripts
 results/    Generated CSV outputs  
 figs/       Generated figures  
 
----
+
 
 ## 5. Mapping to Paper Results
 
@@ -85,13 +79,13 @@ Figure 4       → configs/case_study_B2.cfg
 Figure 5       → configs/case_study_B3.cfg  
 Table I        → Execution logs  
 
----
+
 
 ## 6. License
 
 Released under the MIT License.
 
----
+
 
 ## 7. Citation
 

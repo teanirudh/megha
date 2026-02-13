@@ -19,7 +19,7 @@ It models:
 
 Kumo is designed to support reproducible experiments for cloud scheduling, co-location attacks, and serverless security research.
 
----
+
 
 # **Project Structure**
 
@@ -42,7 +42,7 @@ results/
   ... CSV logs, trace logs, etc.
 ```
 
----
+
 
 # **Build**
 
@@ -57,7 +57,7 @@ Then run experiments with:
 ./kumo_experiment <config-file>
 ```
 
----
+
 
 # **Key Features**
 
@@ -70,7 +70,7 @@ Then run experiments with:
 * `openwhisk_warm` — warm-enhanced
 * `pasch` — tenant packing strategy
 
----
+
 
 ### **Workloads**
 
@@ -79,7 +79,7 @@ Then run experiments with:
 * **Burst** — Periodic high-rate spikes
 * All workloads can be overlaid with an **attacker traffic model**
 
----
+
 
 ### **Tenancy & Resources**
 
@@ -88,7 +88,7 @@ Then run experiments with:
 * **Idle timeouts** for container eviction
 * **Pre-warmed containers** (`prewarm.enabled=1`)
 
----
+
 
 ### **Experiment Automation**
 
@@ -105,13 +105,13 @@ Then run experiments with:
   * worker stats
 * Optional detailed trace logging (`trace.enabled=1`)
 
----
+
 
 # **Running Examples**
 
 Below are minimal runnable examples that demonstrate each major feature.
 
----
+
 
 ## **1. Uniform Workload + Spread Scheduler + Attacker**
 
@@ -142,7 +142,7 @@ output_csv=results/spread_attack.csv
 ./kumo_experiment configs/example.cfg
 ```
 
----
+
 
 ## **2. Poisson Example**
 
@@ -175,7 +175,7 @@ output_csv=results/spread_poisson_attack.csv
 ./kumo_experiment configs/poisson_example.cfg
 ```
 
----
+
 
 ## **3. Burst Workload Example**
 
@@ -211,7 +211,7 @@ output_csv=results/spread_burst_attack.csv
 ./kumo_experiment configs/burst_example.cfg
 ```
 
----
+
 
 ## **4. Worker Heterogeneity Example**
 
@@ -258,7 +258,7 @@ output_csv=results/hetero_spread_poisson.csv
 ./kumo_experiment configs/hetero_example.cfg
 ```
 
----
+
 
 ## **5. Pre-warmed Containers**
 
@@ -271,7 +271,7 @@ prewarm.per_function=2
 
 This reduces cold starts for exercised functions.
 
----
+
 
 ## **6. Tracing / Logging**
 
@@ -291,7 +291,7 @@ Traces include:
 * Container cooling
 * Co-location events
 
----
+
 
 ## **7. Full Parameter Sweep**
 
@@ -330,7 +330,7 @@ sweep.idle_timeouts=10,60
 
 This produces all combinations (3 schedulers × 3 seeds × 2 timeouts = 18 total runs), each appended to the CSV.
 
----
+
 
 # **CSV Output Format**
 
@@ -344,12 +344,12 @@ cold_f1,warm_f1,
 coloc_v1_attacker
 ```
 
----
+
 
 # **Status Summary**
 
 | Feature                     | Status         |
-| --------------------------- | -------------- |
+|  | -- |
 | Event-driven engine         | ✓              |
 | Cold/Warm modeling          | ✓              |
 | Idle timeout + eviction     | ✓              |
@@ -365,4 +365,3 @@ coloc_v1_attacker
 | CSV output                  | ✓              |
 | Detailed tracing            | ✓              |
 
----
