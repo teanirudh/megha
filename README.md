@@ -329,39 +329,3 @@ sweep.idle_timeouts=10,60
 ```
 
 This produces all combinations (3 schedulers × 3 seeds × 2 timeouts = 18 total runs), each appended to the CSV.
-
-
-
-# **CSV Output Format**
-
-Each row (per run) contains:
-
-```
-scheduler,workload,attacker,
-num_tenants,num_workers,total_invocations,
-seed,idle_timeout,prewarm_per_function,sim_time,failed,
-cold_f1,warm_f1,
-coloc_v1_attacker
-```
-
-
-
-# **Status Summary**
-
-| Feature                     | Status         |
-|  | -- |
-| Event-driven engine         | ✓              |
-| Cold/Warm modeling          | ✓              |
-| Idle timeout + eviction     | ✓              |
-| Scheduler framework         | ✓              |
-| Attacker model              | ✓              |
-| Uniform workload            | ✓              |
-| Poisson workload            | ✓              |
-| Burst workload              | ✓              |
-| Multi-function tenants      | ✓              |
-| Worker heterogeneity        | ✓              |
-| Prewarm containers          | ✓              |
-| Parameter sweeps            | ✓              |
-| CSV output                  | ✓              |
-| Detailed tracing            | ✓              |
-
