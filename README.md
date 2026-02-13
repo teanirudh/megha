@@ -1,6 +1,8 @@
 
+## For CCGRID 2026 artifact reproduction instructions, see ARTIFACT.md.
+
+
 # **Kumo: A Modular Serverless Security Simulator**
-For CCGRID 2026 artifact reproduction instructions, see ARTIFACT.md.
 
 Kumo is a modular, event-driven simulator for evaluating **performance and security** in multi-tenant serverless platforms.
 It models:
@@ -26,20 +28,22 @@ Kumo is designed to support reproducible experiments for cloud scheduling, co-lo
 ```
 src/
   common/          - Base types and utilities
+  config/          - Config parser
+  core/            - Engine, Events, Scenario, ExperimentRunner, TraceLogger
+  metrics/         - Metric Collector
   model/           - Apps, functions, workers, containers
   scheduler/       - Pluggable schedulers + registry
   workload/        - Uniform, Poisson, Burst, Attack workloads
-  core/            - Engine, Events, Scenario, ExperimentRunner, TraceLogger
-  config/          - Config parser
   main_experiment.cpp
+  main.cpp
 configs/
-  example.cfg
-  poisson_example.cfg
-  burst_example.cfg
-  hetero_example.cfg
-  sweep_example.cfg
+  ... cfg experiment configurations.
 results/
   ... CSV logs, trace logs, etc.
+plot/
+  ... Python plotting scripts
+tests/
+  ... unit tests
 ```
 
 
@@ -47,8 +51,7 @@ results/
 # **Build**
 
 ```bash
-g++ -std=c++17 -I./src -o kumo_experiment src/main_experiment.cpp
-mkdir -p results
+make
 ```
 
 Then run experiments with:
