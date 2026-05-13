@@ -1,0 +1,11 @@
+to-do:
+- build abstract cache-usage model
+- develop a cache-aware scheduler
+- study the reduction in co-location
+- measure performance overhead
+
+deliverables:
+- project report
+- source code
+- presentation
+- 5 min video
