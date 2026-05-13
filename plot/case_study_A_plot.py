@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 dfA = pd.read_csv(f"results/case_study_A_result.csv")
 
+
 def prepare_metrics(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
@@ -26,14 +27,15 @@ def prepare_metrics(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+
 dfA = prepare_metrics(dfA)
 
 scheduler_order = ["spread", "random", "helper", "openwhisk"]
 sched_colors = {
-    "DoubleDip":     "#0077b6",
-    "Random":     "#2a9d8f",
-    "Helper":     "#f4a261",
-    "OpenWhisk":  "#e76f51",
+    "DoubleDip": "#0077b6",
+    "Random": "#2a9d8f",
+    "Helper": "#f4a261",
+    "OpenWhisk": "#e76f51",
 }
 
 
@@ -43,34 +45,33 @@ def sem(x: pd.Series) -> float:
         return np.nan
     return x.std(ddof=1) / np.sqrt(len(x))
 
+
 def mean_observed_ttf(x: pd.Series) -> float:
     x = x.dropna()
     x = x[x >= 0]
     return x.mean() if len(x) > 0 else np.nan
+
 
 def sem_observed_ttf(x: pd.Series) -> float:
     x = x.dropna()
     x = x[x >= 0]
     return sem(x)
 
+
 aggA = (
     dfA.groupby("scheduler")
-       .agg(
-           runs=("scheduler", "size"),
-
-           mean_cold_rate=("cold_start_rate_f1", "mean"),
-           sem_cold_rate=("cold_start_rate_f1", sem),
-
-           mean_co_loc_prob=("co_loc_prob", "mean"),
-           sem_co_loc_prob=("co_loc_prob", sem),
-
-           mean_ttf_coloc=("ttf_coloc", mean_observed_ttf),
-           sem_ttf_coloc=("ttf_coloc", sem_observed_ttf),
-
-           # Optional: how often co-location was *ever observed* in a run
-           ttf_obs_runs=("ttf_coloc", lambda s: np.sum((s.dropna() >= 0).astype(int))),
-       )
-       .reset_index()
+    .agg(
+        runs=("scheduler", "size"),
+        mean_cold_rate=("cold_start_rate_f1", "mean"),
+        sem_cold_rate=("cold_start_rate_f1", sem),
+        mean_co_loc_prob=("co_loc_prob", "mean"),
+        sem_co_loc_prob=("co_loc_prob", sem),
+        mean_ttf_coloc=("ttf_coloc", mean_observed_ttf),
+        sem_ttf_coloc=("ttf_coloc", sem_observed_ttf),
+        # Optional: how often co-location was *ever observed* in a run
+        ttf_obs_runs=("ttf_coloc", lambda s: np.sum((s.dropna() >= 0).astype(int))),
+    )
+    .reset_index()
 )
 
 aggA = aggA.set_index("scheduler").reindex(scheduler_order).reset_index()
@@ -82,14 +83,16 @@ aggA["scheduler"] = aggA["scheduler"].replace({"helper": "Helper"})
 aggA["scheduler"] = aggA["scheduler"].replace({"random": "Random"})
 
 
-plt.rcParams.update({
-    "axes.grid": False,
-    "axes.axisbelow": True,
-    "grid.linestyle": "--",
-    "font.size": 11,
-    "axes.titlesize": 12,
-    "axes.labelsize": 11,
-})
+plt.rcParams.update(
+    {
+        "axes.grid": False,
+        "axes.axisbelow": True,
+        "grid.linestyle": "--",
+        "font.size": 11,
+        "axes.titlesize": 12,
+        "axes.labelsize": 11,
+    }
+)
 
 fig, axes = plt.subplots(2, 2, figsize=(10, 7))
 (ax_co, ax_cold), (ax_trade, ax_ttf) = axes
@@ -98,8 +101,15 @@ xs = np.arange(len(aggA))
 colors = [sched_colors[s] for s in aggA["scheduler"]]
 
 # (a) Co-location probability
-ax_co.bar(xs, aggA["mean_co_loc_prob"].fillna(0.0),
-          capsize=3, color=colors, width=0.175, edgecolor='black', linewidth=0.8)
+ax_co.bar(
+    xs,
+    aggA["mean_co_loc_prob"].fillna(0.0),
+    capsize=3,
+    color=colors,
+    width=0.175,
+    edgecolor="black",
+    linewidth=0.8,
+)
 ax_co.set_xticks(xs)
 ax_co.set_xticklabels(aggA["scheduler"], rotation=30, ha="center")
 ax_co.set_ylabel("P(co-location | victim invocation)")
@@ -107,8 +117,15 @@ ax_co.set_ylabel("P(co-location | victim invocation)")
 ax_co.set_title("(a) Co-location probability")
 
 # (b) Cold-start rate
-ax_cold.bar(xs, aggA["mean_cold_rate"].fillna(0.0),
-            capsize=3, color=colors, width=0.175, edgecolor='black', linewidth=0.8)
+ax_cold.bar(
+    xs,
+    aggA["mean_cold_rate"].fillna(0.0),
+    capsize=3,
+    color=colors,
+    width=0.175,
+    edgecolor="black",
+    linewidth=0.8,
+)
 ax_cold.set_xticks(xs)
 ax_cold.set_xticklabels(aggA["scheduler"], rotation=30, ha="center")
 ax_cold.set_ylabel("Cold start rate")
@@ -116,7 +133,7 @@ ax_cold.set_ylim(0, 1.01)
 ax_cold.set_title("(b) Cold-start rate")
 
 # (c) Tradeoff scatter
-ax_trade.grid(True, linestyle='--')
+ax_trade.grid(True, linestyle="--")
 for _, row in aggA.iterrows():
     sched = row["scheduler"]
     x = row["mean_cold_rate"]
@@ -125,14 +142,12 @@ for _, row in aggA.iterrows():
         continue
     ax_trade.scatter(x, y, color=sched_colors[sched])
     if sched == "DoubleDip":
-        ax_trade.text(x, y, "  "+sched, fontsize=9, ha="left", va="bottom")
+        ax_trade.text(x, y, "  " + sched, fontsize=9, ha="left", va="bottom")
     elif sched == "OpenWhisk":
         ax_trade.text(x, y, "  OpenWhisk", fontsize=9, ha="left", va="bottom")
     else:
-        ax_trade.text(x, y, "  "+sched, fontsize=9, ha="left", va="bottom")
-    
+        ax_trade.text(x, y, "  " + sched, fontsize=9, ha="left", va="bottom")
 
-    
 
 ax_trade.set_xlabel("Cold start rate")
 ax_trade.set_ylabel("P(co-location | victim invocation)")
@@ -145,12 +160,19 @@ ttf_subset = aggA[~aggA["mean_ttf_coloc"].isna()].copy()
 xs2 = np.arange(len(ttf_subset))
 colors2 = [sched_colors[s] for s in ttf_subset["scheduler"]]
 
-ax_ttf.bar(xs2, ttf_subset["mean_ttf_coloc"], 
-           capsize=3, color=colors2, width=0.125, edgecolor='black', linewidth=0.8)
+ax_ttf.bar(
+    xs2,
+    ttf_subset["mean_ttf_coloc"],
+    capsize=3,
+    color=colors2,
+    width=0.125,
+    edgecolor="black",
+    linewidth=0.8,
+)
 ax_ttf.set_xticks(xs2)
 ax_ttf.set_xticklabels(ttf_subset["scheduler"], rotation=30, ha="center")
 ax_ttf.set_ylabel("Time to first co-location (time units)")
-ax_ttf.set_ylim(0, max(ttf_subset["mean_ttf_coloc"])*1.2)
+ax_ttf.set_ylim(0, max(ttf_subset["mean_ttf_coloc"]) * 1.2)
 ax_ttf.set_title("(d) Time to first co-location")
 
 plt.tight_layout()

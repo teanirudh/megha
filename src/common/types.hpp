@@ -4,18 +4,19 @@
 #include <cstdint>
 #include <string>
 
-namespace kumo {
+namespace kumo
+{
 
 /**
  * Basic identifier types used throughout the simulator.
  * Having strong typedefs keeps function signatures clear.
  */
-using TenantId     = std::uint32_t;
-using UserId       = std::uint32_t;
-using FunctionId   = std::uint32_t;   // logical "function" / app type
-using InvocationId = std::uint64_t;   // individual invocation/request
-using WorkerId     = std::uint32_t;   // node / invoker
-using ContainerId  = std::uint64_t;   // warm container instance
+using TenantId = std::uint32_t;
+using UserId = std::uint32_t;
+using FunctionId = std::uint32_t;   // logical "function" / app type
+using InvocationId = std::uint64_t; // individual invocation/request
+using WorkerId = std::uint32_t;     // node / invoker
+using ContainerId = std::uint64_t;  // warm container instance
 
 /**
  * Simulation time.
@@ -26,16 +27,17 @@ using ContainerId  = std::uint64_t;   // warm container instance
  * configure the engine.
  */
 using TimePoint = double;
-using Duration  = double;
+using Duration = double;
 
 /**
  * Optional tag for grouping functions into tenants / users.
  * This is mostly convenience for future logging / metrics
  */
-struct Identity {
-    TenantId     tenant   = 0;
-    UserId       user     = 0;
-    FunctionId   function = 0;
+struct Identity
+{
+    TenantId tenant = 0;
+    UserId user = 0;
+    FunctionId function = 0;
     InvocationId invocation = 0;
 };
 

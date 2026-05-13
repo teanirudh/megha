@@ -1,16 +1,17 @@
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
 #include "common/types.hpp"
+#include "core/engine.hpp"
 #include "model/app.hpp"
 #include "model/platform_state.hpp"
 #include "scheduler/spread_scheduler.hpp"
 #include "workload/workload.hpp"
-#include "core/engine.hpp"
 
 using namespace kumo;
 
-int main() {
+int main()
+{
     std::cout << "=== Workload + SpreadScheduler End-to-End Test ===\n";
 
     //
@@ -19,24 +20,26 @@ int main() {
     const std::uint32_t num_tenants = 3;
 
     PlatformState ps;
-    ResourceConfig func_res{ .cpu_cores = 0.25, .memory_mb = 64, .storage_mb = 5 };
+    ResourceConfig func_res{
+        .cpu_cores = 0.25, .memory_mb = 64, .storage_mb = 5};
 
     // define 1 function per tenant
-    for (std::uint32_t i = 0; i < num_tenants; ++i) {
+    for (std::uint32_t i = 0; i < num_tenants; ++i)
+    {
         FunctionProfile f;
-        f.id        = 1 + i;
-        f.tenant    = 1 + i;
-        f.owner     = 1 + i;
-        f.name      = "func-" + std::to_string(f.id);
+        f.id = 1 + i;
+        f.tenant = 1 + i;
+        f.owner = 1 + i;
+        f.name = "func-" + std::to_string(f.id);
         f.resources = func_res;
         ps.add_function(f);
     }
 
     // workers
-    ResourceConfig cap{ .cpu_cores = 4.0, .memory_mb = 4096, .storage_mb = 200 };
-    ps.add_worker(cap);   // worker 0
-    ps.add_worker(cap);   // worker 1
-    ps.add_worker(cap);   // worker 2
+    ResourceConfig cap{.cpu_cores = 4.0, .memory_mb = 4096, .storage_mb = 200};
+    ps.add_worker(cap); // worker 0
+    ps.add_worker(cap); // worker 1
+    ps.add_worker(cap); // worker 2
 
     //
     // 2. Set scheduler + engine
@@ -62,7 +65,8 @@ int main() {
     TimePoint now = 0.0;
     Duration step = 10.0;
 
-    while (workload.has_more()) {
+    while (workload.has_more())
+    {
         auto batch = workload.next_batch(now);
         engine.enqueue_invocations(batch);
         engine.run_until(now + step);
@@ -76,31 +80,37 @@ int main() {
     //
     std::cout << "\n=== Simulation Results ===\n";
     std::cout << "Simulated time: " << engine.now() << "\n";
-    std::cout << "Failed invocations: " << engine.num_failed_invocations() << "\n";
+    std::cout << "Failed invocations: " << engine.num_failed_invocations()
+              << "\n";
 
-    const auto& ps_final = engine.platform();
+    const auto &ps_final = engine.platform();
 
     std::cout << "\nWorker tenant presence:\n";
-    for (WorkerId wid : ps_final.workers()) {
-        const auto& w = ps_final.worker_view(wid);
+    for (WorkerId wid : ps_final.workers())
+    {
+        const auto &w = ps_final.worker_view(wid);
 
         std::cout << "  Worker " << wid << ": tenants = { ";
-        for (auto t : w.tenants_present) std::cout << t << " ";
+        for (auto t : w.tenants_present)
+            std::cout << t << " ";
         std::cout << "} active=" << w.active_invocations
                   << " cpu_used=" << w.used.cpu_cores << "\n";
     }
 
-    const auto& M = engine.metrics();
+    const auto &M = engine.metrics();
 
     std::cout << "\nPer-tenant invocation counts:\n";
-    for (auto& kv : M.tenant_invocations()) {
+    for (auto &kv : M.tenant_invocations())
+    {
         std::cout << "  tenant " << kv.first << " -> " << kv.second << "\n";
     }
 
     std::cout << "\nCo-location counts:\n";
-    for (auto& kv : M.colocations()) {
+    for (auto &kv : M.colocations())
+    {
         auto p = kv.first;
-        std::cout << "  (" << p.first << "," << p.second << ") -> " << kv.second << "\n";
+        std::cout << "  (" << p.first << "," << p.second << ") -> " << kv.second
+                  << "\n";
     }
 
     std::cout << "\n[TEST COMPLETED]\n";

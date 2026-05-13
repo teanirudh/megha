@@ -1,28 +1,31 @@
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
 #include "common/types.hpp"
+#include "core/engine.hpp"
+#include "core/scenario.hpp"
 #include "model/app.hpp"
 #include "model/platform_state.hpp"
 #include "scheduler/registry.hpp"
-#include "workload/workload.hpp"
 #include "workload/attack_workload.hpp"
-#include "core/engine.hpp"
-#include "core/scenario.hpp"
+#include "workload/workload.hpp"
 
 using namespace kumo;
 
-void print_metrics(const MetricsCollector& m) {
+void print_metrics(const MetricsCollector &m)
+{
     std::cout << "Per-tenant invocation counts:\n";
-    for (auto& kv : m.tenant_invocations()) {
+    for (auto &kv : m.tenant_invocations())
+    {
         std::cout << "  tenant " << kv.first << " -> " << kv.second << "\n";
     }
 
     std::cout << "\nCo-location counts:\n";
-    for (auto& kv : m.colocations()) {
+    for (auto &kv : m.colocations())
+    {
         auto p = kv.first;
-        std::cout << "  (" << p.first << "," << p.second << ") -> "
-                  << kv.second << "\n";
+        std::cout << "  (" << p.first << "," << p.second << ") -> " << kv.second
+                  << "\n";
     }
 }
 
@@ -32,7 +35,8 @@ void print_metrics(const MetricsCollector& m) {
 //   - One attacker tenant (999) with func 100
 //   - Two workers
 //
-PlatformState make_platform() {
+PlatformState make_platform()
+{
     PlatformState ps;
 
     // victim function
@@ -41,7 +45,7 @@ PlatformState make_platform() {
     f_vic.tenant = 1;
     f_vic.owner = 1;
     f_vic.name = "victim-func";
-    f_vic.resources = { .cpu_cores = 0.3, .memory_mb = 64, .storage_mb = 5 };
+    f_vic.resources = {.cpu_cores = 0.3, .memory_mb = 64, .storage_mb = 5};
     ps.add_function(f_vic);
 
     // attacker function
@@ -50,19 +54,20 @@ PlatformState make_platform() {
     f_att.tenant = 999;
     f_att.owner = 999;
     f_att.name = "attacker-func";
-    f_att.resources = { .cpu_cores = 0.3, .memory_mb = 64, .storage_mb = 5 };
+    f_att.resources = {.cpu_cores = 0.3, .memory_mb = 64, .storage_mb = 5};
     ps.add_function(f_att);
 
     // two workers
-    ResourceConfig cap{ .cpu_cores = 4.0, .memory_mb = 2048, .storage_mb = 200 };
-    ps.add_worker(cap);  // worker 0
-    ps.add_worker(cap);  // worker 1
+    ResourceConfig cap{.cpu_cores = 4.0, .memory_mb = 2048, .storage_mb = 200};
+    ps.add_worker(cap); // worker 0
+    ps.add_worker(cap); // worker 1
 
     return ps;
 }
 
 // Run a scenario using the given scheduler name and return metrics.
-MetricsCollector run_attack_scenario(const std::string& scheduler_name) {
+MetricsCollector run_attack_scenario(const std::string &scheduler_name)
+{
     std::cout << "\n=== Running " << scheduler_name << " ===\n";
 
     // 1. Baseline victim workload
@@ -72,41 +77,39 @@ MetricsCollector run_attack_scenario(const std::string& scheduler_name) {
         /*max_batch_size=*/5,
         /*base_func_id=*/1,
         /*base_tenant_id=*/1,
-        /*seed=*/1234
-    );
+        /*seed=*/1234);
     base->set_default_service_time(20.0);
 
     // 2. Attack config
     AttackConfig cfg;
     cfg.attacker_tenant = 999;
     cfg.attacker_function = 100;
-    cfg.victims = {1};          // attack tenant 1
-    cfg.attack_per_victim = 1;  // ~1 attack per victim invocation
+    cfg.victims = {1};         // attack tenant 1
+    cfg.attack_per_victim = 1; // ~1 attack per victim invocation
 
     // 3. Wrap baseline workload in AttackWorkload
-    auto attack_wl = std::make_unique<AttackWorkload>(std::move(base), cfg, /*seed=*/777);
+    auto attack_wl =
+        std::make_unique<AttackWorkload>(std::move(base), cfg, /*seed=*/777);
 
     // 4. Build platform
     PlatformState ps = make_platform();
 
     // 5. Scheduler via registry
-    auto& reg = SchedulerRegistry::instance();
+    auto &reg = SchedulerRegistry::instance();
     auto sched = reg.create(scheduler_name, /*seed=*/999);
 
     // 6. Engine + scenario
     Engine engine(std::move(ps), std::move(sched));
-    SingleWorkloadScenario scenario(
-        std::move(engine),
-        std::move(attack_wl),
-        /*time_step=*/10.0
-    );
+    SingleWorkloadScenario scenario(std::move(engine), std::move(attack_wl),
+                                    /*time_step=*/10.0);
 
     scenario.run();
 
     return scenario.engine().metrics();
 }
 
-int main() {
+int main()
+{
     // Compare random vs spread
     auto m_random = run_attack_scenario("random");
     auto m_spread = run_attack_scenario("spread");
@@ -126,10 +129,13 @@ int main() {
     std::cout << "Random co-location = " << col_random << "\n";
     std::cout << "Spread co-location = " << col_spread << "\n";
 
-    if (col_random > col_spread) {
+    if (col_random > col_spread)
+    {
         std::cout << "\n[ATTACK TEST PASS]\n";
         return 0;
-    } else {
+    }
+    else
+    {
         std::cout << "\n[ATTACK TEST FAIL: Spread should reduce co-location]\n";
         return 1;
     }

@@ -14,8 +14,6 @@ This repository contains:
 Artifact DOI:
 https://doi.org/10.5281/zenodo.18635971
 
-
-
 ## Overview
 
 Kumo models:
@@ -34,33 +32,31 @@ Kumo models:
 
 Kumo is designed to support reproducible experiments for cloud scheduling, co-location attacks, and serverless security research.
 
-
-
 ## Project Structure
+
 ```
 src/
-  common/          Base types and utilities  
-  config/          Config parser  
-  core/            Engine, Events, Scenario, ExperimentRunner, TraceLogger  
-  metrics/         Metric Collector  
-  model/           Apps, functions, workers, containers  
-  scheduler/       Pluggable schedulers + registry  
-  workload/        Uniform, Poisson, Burst, Attack workloads  
-  main_experiment.cpp  
+  common/          Base types and utilities
+  config/          Config parser
+  core/            Engine, Events, Scenario, ExperimentRunner, TraceLogger
+  metrics/         Metric Collector
+  model/           Apps, functions, workers, containers
+  scheduler/       Pluggable schedulers + registry
+  workload/        Uniform, Poisson, Burst, Attack workloads
+  main_experiment.cpp
 
-configs/  
-  Experiment configurations  
+configs/
+  Experiment configurations
 
-plot/  
-  Python plotting scripts  
+plot/
+  Python plotting scripts
 
-results/  
-  Generated CSV logs  
+results/
+  Generated CSV logs
 
-tests/  
-  Unit tests  
+tests/
+  Unit tests
 ```
-
 
 ## Build
 
@@ -73,10 +69,10 @@ make
 This produces the binary: kumo_experiment
 
 Run an experiment:
+
 ```bash
 ./kumo_experiment <config-file>
 ```
-
 
 ## Core Capabilities
 
@@ -121,8 +117,6 @@ Exports metrics to CSV:
 
 Optional detailed trace logging (trace.enabled=1).
 
-
-
 ## Example Usage
 
 Run a configuration file:
@@ -133,17 +127,15 @@ Parameter sweep example:
 
 ./kumo_experiment configs/sweep_example.cfg
 
-
-
 ## Artifact Reproduction (CCGRID 2026)
 
 To reproduce the published CCGRID results:
+
 ```bash
 make reproduce
 ```
+
 See ARTIFACT.md for full reproduction instructions.
-
-
 
 ## License
 

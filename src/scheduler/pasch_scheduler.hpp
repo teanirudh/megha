@@ -1,15 +1,16 @@
 #pragma once
 
-#include <vector>
+#include <functional>
 #include <random>
 #include <string>
-#include <functional>
+#include <vector>
 
-#include "scheduler/scheduler.hpp"
-#include "model/platform_state.hpp"
 #include "model/app.hpp"
+#include "model/platform_state.hpp"
+#include "scheduler/scheduler.hpp"
 
-namespace kumo {
+namespace kumo
+{
 
 /**
  * PASchScheduler:
@@ -19,30 +20,27 @@ namespace kumo {
  *  - Maps that key to a worker (consistent-ish hashing).
  *  - If that worker lacks capacity, falls back to random healthy.
  */
-class PASchScheduler : public Scheduler {
-public:
-    PASchScheduler()
-        : rng_(std::random_device{}())
-    {}
+class PASchScheduler : public Scheduler
+{
+  public:
+    PASchScheduler() : rng_(std::random_device{}()) {}
 
-    explicit PASchScheduler(std::uint64_t seed)
-        : rng_(seed)
-    {}
+    explicit PASchScheduler(std::uint64_t seed) : rng_(seed) {}
 
-    std::string name() const override {
-        return "pasch";
-    }
+    std::string name() const override { return "pasch"; }
 
-    SchedulingDecision schedule(const Invocation& inv,
-                                const PlatformState& state) override
+    SchedulingDecision schedule(const Invocation &inv,
+                                const PlatformState &state) override
     {
-        const FunctionProfile* func = state.get_function(inv.function_id());
-        if (!func) {
+        const FunctionProfile *func = state.get_function(inv.function_id());
+        if (!func)
+        {
             return SchedulingDecision::fail("unknown function id");
         }
 
         const auto workers = state.workers();
-        if (workers.empty()) {
+        if (workers.empty())
+        {
             return SchedulingDecision::fail("no workers");
         }
 
@@ -52,9 +50,12 @@ public:
 
         // 2. Determine key from the first package (or fallback to function id).
         std::string key;
-        if (!func->packages.empty()) {
+        if (!func->packages.empty())
+        {
             key = func->packages.front();
-        } else {
+        }
+        else
+        {
             key = "func-" + std::to_string(func->id);
         }
 
@@ -63,20 +64,24 @@ public:
         WorkerId home = ring[idx];
 
         // 3. If home has capacity, use it.
-        if (state.can_host(home, *func)) {
+        if (state.can_host(home, *func))
+        {
             return SchedulingDecision::ok(home);
         }
 
         // 4. Else, fall back to random healthy worker.
         std::vector<WorkerId> healthy;
         healthy.reserve(workers.size());
-        for (WorkerId wid : workers) {
-            if (state.can_host(wid, *func)) {
+        for (WorkerId wid : workers)
+        {
+            if (state.can_host(wid, *func))
+            {
                 healthy.push_back(wid);
             }
         }
 
-        if (healthy.empty()) {
+        if (healthy.empty())
+        {
             return SchedulingDecision::fail("no worker has enough capacity");
         }
 
@@ -85,7 +90,7 @@ public:
         return SchedulingDecision::ok(chosen);
     }
 
-private:
+  private:
     std::mt19937_64 rng_;
 };
 

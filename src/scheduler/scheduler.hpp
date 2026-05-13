@@ -1,12 +1,13 @@
 // src/scheduler/scheduler.hpp
 #pragma once
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include "common/types.hpp"
 
-namespace kumo {
+namespace kumo
+{
 
 // Forward declarations to avoid circular dependencies.
 // These will be defined in other headers (model / core).
@@ -20,22 +21,25 @@ class Invocation;
  * Later we can extend this with more details (e.g., reasons, hints
  * for scaling, etc.).
  */
-struct SchedulingDecision {
-    bool     success   = false;
+struct SchedulingDecision
+{
+    bool success = false;
     WorkerId worker_id = 0;
-    std::string reason;  // optional human-readable explanation
+    std::string reason; // optional human-readable explanation
 
-    static SchedulingDecision ok(WorkerId wid) {
+    static SchedulingDecision ok(WorkerId wid)
+    {
         SchedulingDecision d;
-        d.success   = true;
+        d.success = true;
         d.worker_id = wid;
         return d;
     }
 
-    static SchedulingDecision fail(std::string why = {}) {
+    static SchedulingDecision fail(std::string why = {})
+    {
         SchedulingDecision d;
         d.success = false;
-        d.reason  = std::move(why);
+        d.reason = std::move(why);
         return d;
     }
 };
@@ -51,8 +55,9 @@ struct SchedulingDecision {
  * per-function warm-set statistics, frequency maps, etc.) as
  * member variables; it just doesn't own the global queue.
  */
-class Scheduler {
-public:
+class Scheduler
+{
+  public:
     virtual ~Scheduler() = default;
 
     /// A short human-readable name, e.g., "random", "openwhisk", "helper".
@@ -68,8 +73,8 @@ public:
      * @return       A SchedulingDecision: either success + worker_id,
      *               or failure (no suitable worker).
      */
-    virtual SchedulingDecision schedule(const Invocation& inv,
-                                        const PlatformState& state) = 0;
+    virtual SchedulingDecision schedule(const Invocation &inv,
+                                        const PlatformState &state) = 0;
 };
 
 /**

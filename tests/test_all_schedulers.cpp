@@ -1,23 +1,26 @@
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "common/types.hpp"
 #include "model/app.hpp"
 #include "model/platform_state.hpp"
-#include "scheduler/random_scheduler.hpp"
-#include "scheduler/spread_scheduler.hpp"
+#include "scheduler/helper_scheduler.hpp"
 #include "scheduler/openwhisk_scheduler.hpp"
 #include "scheduler/openwhisk_warm_scheduler.hpp"
-#include "scheduler/helper_scheduler.hpp"
 #include "scheduler/pasch_scheduler.hpp"
+#include "scheduler/random_scheduler.hpp"
+#include "scheduler/spread_scheduler.hpp"
 
 using namespace kumo;
 
-namespace {
+namespace
+{
 
-bool expect(bool cond, const std::string& msg) {
-    if (!cond) {
+bool expect(bool cond, const std::string &msg)
+{
+    if (!cond)
+    {
         std::cerr << "[FAIL] " << msg << "\n";
         return false;
     }
@@ -25,30 +28,31 @@ bool expect(bool cond, const std::string& msg) {
 }
 
 // Build a simple platform with 3 workers and 2 functions (two tenants).
-PlatformState make_basic_platform() {
+PlatformState make_basic_platform()
+{
     PlatformState ps;
 
     // Two functions with different tenants.
     FunctionProfile fA;
-    fA.id        = 1;
-    fA.tenant    = 10;
-    fA.owner     = 10;
-    fA.name      = "funcA";
-    fA.resources = { .cpu_cores = 0.5, .memory_mb = 128, .storage_mb = 5 };
+    fA.id = 1;
+    fA.tenant = 10;
+    fA.owner = 10;
+    fA.name = "funcA";
+    fA.resources = {.cpu_cores = 0.5, .memory_mb = 128, .storage_mb = 5};
 
     FunctionProfile fB;
-    fB.id        = 2;
-    fB.tenant    = 20;
-    fB.owner     = 20;
-    fB.name      = "funcB";
-    fB.resources = { .cpu_cores = 0.5, .memory_mb = 128, .storage_mb = 5 };
-    fB.packages  = {"pkgB"}; // used by PASch
+    fB.id = 2;
+    fB.tenant = 20;
+    fB.owner = 20;
+    fB.name = "funcB";
+    fB.resources = {.cpu_cores = 0.5, .memory_mb = 128, .storage_mb = 5};
+    fB.packages = {"pkgB"}; // used by PASch
 
     ps.add_function(fA);
     ps.add_function(fB);
 
     // Three identical workers.
-    ResourceConfig cap{ .cpu_cores = 2.0, .memory_mb = 1024, .storage_mb = 50 };
+    ResourceConfig cap{.cpu_cores = 2.0, .memory_mb = 1024, .storage_mb = 50};
     ps.add_worker(cap); // 0
     ps.add_worker(cap); // 1
     ps.add_worker(cap); // 2
@@ -57,30 +61,31 @@ PlatformState make_basic_platform() {
 }
 
 // Helper: apply resource usage + tenant presence to the chosen worker.
-void apply_allocation(PlatformState& ps,
-                      WorkerId wid,
-                      const Invocation& inv)
+void apply_allocation(PlatformState &ps, WorkerId wid, const Invocation &inv)
 {
-    auto* func = ps.get_function(inv.function_id());
-    if (!func) return;
+    auto *func = ps.get_function(inv.function_id());
+    if (!func)
+        return;
 
-    auto& w = ps.mutable_worker(wid);
-    w.used.cpu_cores  += func->resources.cpu_cores;
-    w.used.memory_mb  += func->resources.memory_mb;
+    auto &w = ps.mutable_worker(wid);
+    w.used.cpu_cores += func->resources.cpu_cores;
+    w.used.memory_mb += func->resources.memory_mb;
     w.used.storage_mb += func->resources.storage_mb;
     w.active_invocations += 1;
 
-    if (std::find(w.tenants_present.begin(),
-                  w.tenants_present.end(),
-                  inv.tenant_id()) == w.tenants_present.end()) {
+    if (std::find(w.tenants_present.begin(), w.tenants_present.end(),
+                  inv.tenant_id()) == w.tenants_present.end())
+    {
         w.tenants_present.push_back(inv.tenant_id());
     }
 }
 
 // Helper: reset usage and tenants (for clean tests).
-void reset_usage(PlatformState& ps) {
-    for (WorkerId wid : ps.workers()) {
-        auto& w = ps.mutable_worker(wid);
+void reset_usage(PlatformState &ps)
+{
+    for (WorkerId wid : ps.workers())
+    {
+        auto &w = ps.mutable_worker(wid);
         w.used = ResourceConfig{};
         w.active_invocations = 0;
         w.tenants_present.clear();
@@ -90,7 +95,8 @@ void reset_usage(PlatformState& ps) {
 
 // ---------------- Tests ----------------
 
-bool test_random_scheduler() {
+bool test_random_scheduler()
+{
     std::cout << "=== RandomScheduler ===\n";
     auto ps = make_basic_platform();
     RandomScheduler sched(123);
@@ -98,20 +104,24 @@ bool test_random_scheduler() {
     Invocation inv(1, 1, 10, 10, 0.0, 10.0);
 
     std::vector<WorkerId> chosen;
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 10; ++i)
+    {
         auto dec = sched.schedule(inv, ps);
-        if (!expect(dec.success, "RandomScheduler failed with capacity available"))
+        if (!expect(dec.success,
+                    "RandomScheduler failed with capacity available"))
             return false;
         chosen.push_back(dec.worker_id);
     }
 
     std::cout << "Workers chosen: ";
-    for (auto w : chosen) std::cout << w << " ";
+    for (auto w : chosen)
+        std::cout << w << " ";
     std::cout << "\n";
     return true; // we mostly care it doesn't fail and IDs are in range
 }
 
-bool test_spread_scheduler() {
+bool test_spread_scheduler()
+{
     std::cout << "\n=== SpreadScheduler ===\n";
     auto ps = make_basic_platform();
     SpreadScheduler sched(123);
@@ -120,15 +130,20 @@ bool test_spread_scheduler() {
     Invocation invA(100, 1, 10, 10, 0.0, 10.0);
 
     WorkerId first_worker = 0;
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3; ++i)
+    {
         auto dec = sched.schedule(invA, ps);
         if (!expect(dec.success, "SpreadScheduler failed (tenant 10)"))
             return false;
-        if (i == 0) {
+        if (i == 0)
+        {
             first_worker = dec.worker_id;
-        } else {
-            if (!expect(dec.worker_id == first_worker,
-                        "SpreadScheduler did not keep same tenant on same worker"))
+        }
+        else
+        {
+            if (!expect(
+                    dec.worker_id == first_worker,
+                    "SpreadScheduler did not keep same tenant on same worker"))
                 return false;
         }
         apply_allocation(ps, dec.worker_id, invA);
@@ -148,13 +163,15 @@ bool test_spread_scheduler() {
     // Worker with tenant 10 has variety >=1; the other workers start at variety 0.
     // So we expect tenant 20 to go to some worker != first_worker.
     if (!expect(wB != first_worker,
-                "SpreadScheduler placed new tenant on existing-tenant worker (expected fewer tenants)"))
+                "SpreadScheduler placed new tenant on existing-tenant worker "
+                "(expected fewer tenants)"))
         return false;
 
     return true;
 }
 
-bool test_openwhisk_scheduler() {
+bool test_openwhisk_scheduler()
+{
     std::cout << "\n=== OpenWhiskScheduler ===\n";
     auto ps = make_basic_platform();
     OpenWhiskScheduler sched(123);
@@ -168,21 +185,24 @@ bool test_openwhisk_scheduler() {
     std::cout << "Initial placement on worker: " << dec.worker_id << "\n";
 
     // Now remove capacity from all workers => must fail.
-    for (WorkerId wid : ps.workers()) {
-        auto& w = ps.mutable_worker(wid);
-        w.used.cpu_cores  = w.capacity.cpu_cores;
-        w.used.memory_mb  = w.capacity.memory_mb;
+    for (WorkerId wid : ps.workers())
+    {
+        auto &w = ps.mutable_worker(wid);
+        w.used.cpu_cores = w.capacity.cpu_cores;
+        w.used.memory_mb = w.capacity.memory_mb;
         w.used.storage_mb = w.capacity.storage_mb;
     }
 
     auto dec2 = sched.schedule(inv, ps);
-    if (!expect(!dec2.success, "OpenWhiskScheduler should fail when no capacity"))
+    if (!expect(!dec2.success,
+                "OpenWhiskScheduler should fail when no capacity"))
         return false;
 
     return true;
 }
 
-bool test_openwhisk_warm_scheduler() {
+bool test_openwhisk_warm_scheduler()
+{
     std::cout << "\n=== OpenWhiskWarmScheduler ===\n";
     auto ps = make_basic_platform();
     OpenWhiskWarmScheduler sched(123);
@@ -191,7 +211,7 @@ bool test_openwhisk_warm_scheduler() {
 
     // Mark worker 1 as having a warm container for func 1.
     {
-        auto& w1 = ps.mutable_worker(1);
+        auto &w1 = ps.mutable_worker(1);
         w1.warm_functions.push_back(1);
     }
 
@@ -199,7 +219,8 @@ bool test_openwhisk_warm_scheduler() {
     if (!expect(dec.success, "OpenWhiskWarmScheduler failed unexpectedly"))
         return false;
 
-    std::cout << "Chosen worker (should prefer warm=1): " << dec.worker_id << "\n";
+    std::cout << "Chosen worker (should prefer warm=1): " << dec.worker_id
+              << "\n";
 
     if (!expect(dec.worker_id == 1,
                 "OpenWhiskWarmScheduler did not choose warm worker"))
@@ -208,7 +229,8 @@ bool test_openwhisk_warm_scheduler() {
     return true;
 }
 
-bool test_helper_scheduler() {
+bool test_helper_scheduler()
+{
     std::cout << "\n=== HelperScheduler ===\n";
     auto ps = make_basic_platform();
     // Use a small threshold to encourage scale-out quickly.
@@ -217,7 +239,8 @@ bool test_helper_scheduler() {
     Invocation inv(1, 1, 10, 10, 0.0, 10.0);
 
     std::vector<WorkerId> chosen;
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < 6; ++i)
+    {
         auto dec = sched.schedule(inv, ps);
         if (!expect(dec.success, "HelperScheduler failed unexpectedly"))
             return false;
@@ -226,7 +249,8 @@ bool test_helper_scheduler() {
     }
 
     std::cout << "Worker sequence for func 1: ";
-    for (auto w : chosen) std::cout << w << " ";
+    for (auto w : chosen)
+        std::cout << w << " ";
     std::cout << "\n";
 
     // Expect at least 2 distinct workers due to scale-out.
@@ -239,7 +263,8 @@ bool test_helper_scheduler() {
     return true;
 }
 
-bool test_pasch_scheduler() {
+bool test_pasch_scheduler()
+{
     std::cout << "\n=== PASchScheduler ===\n";
     auto ps = make_basic_platform();
     PASchScheduler sched(123);
@@ -249,7 +274,8 @@ bool test_pasch_scheduler() {
     Invocation invB(2, 2, 20, 20, 0.0, 10.0);
 
     std::vector<WorkerId> seqA;
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 5; ++i)
+    {
         auto dec = sched.schedule(invA, ps);
         if (!expect(dec.success, "PASchScheduler failed for funcA"))
             return false;
@@ -257,7 +283,8 @@ bool test_pasch_scheduler() {
     }
 
     std::vector<WorkerId> seqB;
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 5; ++i)
+    {
         auto dec = sched.schedule(invB, ps);
         if (!expect(dec.success, "PASchScheduler failed for funcB"))
             return false;
@@ -265,22 +292,24 @@ bool test_pasch_scheduler() {
     }
 
     std::cout << "PASch workers for funcA: ";
-    for (auto w : seqA) std::cout << w << " ";
+    for (auto w : seqA)
+        std::cout << w << " ";
     std::cout << "\n";
     std::cout << "PASch workers for funcB: ";
-    for (auto w : seqB) std::cout << w << " ";
+    for (auto w : seqB)
+        std::cout << w << " ";
     std::cout << "\n";
 
     // For each function, we expect consistent mapping (same worker repeatedly)
     auto refA = seqA.front();
     bool allA = std::all_of(seqA.begin(), seqA.end(),
-                            [refA](WorkerId w){ return w == refA; });
+                            [refA](WorkerId w) { return w == refA; });
     if (!expect(allA, "PASchScheduler did not consistently map funcA"))
         return false;
 
     auto refB = seqB.front();
     bool allB = std::all_of(seqB.begin(), seqB.end(),
-                            [refB](WorkerId w){ return w == refB; });
+                            [refB](WorkerId w) { return w == refB; });
     if (!expect(allB, "PASchScheduler did not consistently map funcB"))
         return false;
 
@@ -289,7 +318,8 @@ bool test_pasch_scheduler() {
 
 } // namespace
 
-int main() {
+int main()
+{
     bool ok = true;
 
     ok &= test_random_scheduler();
@@ -299,10 +329,13 @@ int main() {
     ok &= test_helper_scheduler();
     ok &= test_pasch_scheduler();
 
-    if (ok) {
+    if (ok)
+    {
         std::cout << "\nAll scheduler tests: [PASS]\n";
         return 0;
-    } else {
+    }
+    else
+    {
         std::cerr << "\nSome scheduler tests: [FAIL]\n";
         return 1;
     }

@@ -7,7 +7,8 @@
 #include "core/engine.hpp"
 #include "workload/workload.hpp"
 
-namespace kumo {
+namespace kumo
+{
 
 /**
  * Abstract Scenario:
@@ -22,16 +23,17 @@ namespace kumo {
  *  - AttackScenario (victim + attacker workload),
  *  - TraceReplayScenario, etc.
  */
-class Scenario {
-public:
+class Scenario
+{
+  public:
     virtual ~Scenario() = default;
 
     /// Run the scenario to completion.
     virtual void run() = 0;
 
     /// Access the underlying engine (for inspection / results).
-    virtual Engine& engine() = 0;
-    virtual const Engine& engine() const = 0;
+    virtual Engine &engine() = 0;
+    virtual const Engine &engine() const = 0;
 };
 
 /**
@@ -46,22 +48,25 @@ public:
  * This is essentially the cleaned-up version of your "uniform submission"
  * pattern from the old Cluster::run code.
  */
-class SingleWorkloadScenario : public Scenario {
-public:
-    SingleWorkloadScenario(Engine engine,
-                           std::unique_ptr<Workload> workload,
+class SingleWorkloadScenario : public Scenario
+{
+  public:
+    SingleWorkloadScenario(Engine engine, std::unique_ptr<Workload> workload,
                            Duration time_step)
-        : engine_(std::move(engine))
-        , workload_(std::move(workload))
-        , time_step_(time_step)
-    {}
+        : engine_(std::move(engine)), workload_(std::move(workload)),
+          time_step_(time_step)
+    {
+    }
 
-    void run() override {
+    void run() override
+    {
         TimePoint now = engine_.now();
 
-        while (workload_ && workload_->has_more()) {
+        while (workload_ && workload_->has_more())
+        {
             auto batch = workload_->next_batch(now);
-            if (!batch.empty()) {
+            if (!batch.empty())
+            {
                 engine_.enqueue_invocations(batch);
             }
             engine_.run_until(now + time_step_);
@@ -72,18 +77,14 @@ public:
         engine_.run();
     }
 
-    Engine& engine() override {
-        return engine_;
-    }
+    Engine &engine() override { return engine_; }
 
-    const Engine& engine() const override {
-        return engine_;
-    }
+    const Engine &engine() const override { return engine_; }
 
-private:
-    Engine                    engine_;
+  private:
+    Engine engine_;
     std::unique_ptr<Workload> workload_;
-    Duration                  time_step_;
+    Duration time_step_;
 };
 
 } // namespace kumo

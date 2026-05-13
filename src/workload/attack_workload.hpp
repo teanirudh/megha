@@ -2,15 +2,16 @@
 #pragma once
 
 #include <memory>
-#include <vector>
-#include <unordered_set>
 #include <random>
+#include <unordered_set>
+#include <vector>
 
 #include "common/types.hpp"
 #include "model/app.hpp"
 #include "workload/workload.hpp"
 
-namespace kumo {
+namespace kumo
+{
 
 /**
  * Configuration for an "attacker" tenant.
@@ -22,12 +23,13 @@ namespace kumo {
  *   invocation (e.g., 1.0 = ~1 attack per victim, 2.0 = ~2 attacks per
  *   victim, 0.5 = ~1 attack every 2 victim invocations).
  */
-struct AttackConfig {
-    TenantId   attacker_tenant   = 0;
+struct AttackConfig
+{
+    TenantId attacker_tenant = 0;
     FunctionId attacker_function = 0;
 
     std::vector<TenantId> victims;
-    double attack_per_victim = 1.0;   // ratio
+    double attack_per_victim = 1.0;      // ratio
     std::uint64_t total_invocations = 1; // optional cap
 
     // Optional: user field can be same as attacker_tenant or separate.
@@ -51,34 +53,37 @@ struct AttackConfig {
  * This provides a clean analogue to your old Attacker behavior, but
  * now decoupled from the scheduler and engine.
  */
-class AttackWorkload : public Workload {
-public:
-    AttackWorkload(std::unique_ptr<Workload> baseline,
-                   AttackConfig cfg,
+class AttackWorkload : public Workload
+{
+  public:
+    AttackWorkload(std::unique_ptr<Workload> baseline, AttackConfig cfg,
                    std::uint64_t seed = 0)
-        : baseline_(std::move(baseline))
-        , cfg_(std::move(cfg))
-        , rng_(seed ? seed : std::random_device{}())
+        : baseline_(std::move(baseline)), cfg_(std::move(cfg)),
+          rng_(seed ? seed : std::random_device{}())
     {
         attacker_user_ = (cfg_.attacker_user != 0)
-            ? cfg_.attacker_user
-            : static_cast<UserId>(cfg_.attacker_tenant);
+                             ? cfg_.attacker_user
+                             : static_cast<UserId>(cfg_.attacker_tenant);
 
         victim_set_.reserve(cfg_.victims.size());
-        for (auto t : cfg_.victims) {
+        for (auto t : cfg_.victims)
+        {
             victim_set_.insert(t);
         }
     }
 
-    std::vector<Invocation> next_batch(TimePoint now) override {
+    std::vector<Invocation> next_batch(TimePoint now) override
+    {
         std::vector<Invocation> batch;
-        if (!baseline_ || !baseline_->has_more()) {
+        if (!baseline_ || !baseline_->has_more())
+        {
             return batch;
         }
 
         // 1. Get the baseline (victim) batch.
         std::vector<Invocation> victims = baseline_->next_batch(now);
-        if (victims.empty()) {
+        if (victims.empty())
+        {
             return victims; // nothing to do; also no attack this step
         }
 
@@ -95,25 +100,30 @@ public:
         //      * plus 1 extra attack with probability (lambda - floor(lambda)).
         std::uniform_real_distribution<double> uni01(0.0, 1.0);
 
-        for (const auto& inv : victims) {
-            if (!is_victim(inv.tenant_id())) {
+        for (const auto &inv : victims)
+        {
+            if (!is_victim(inv.tenant_id()))
+            {
                 continue;
             }
 
             double lambda = cfg_.attack_per_victim;
-            if (lambda <= 0.0) continue;
+            if (lambda <= 0.0)
+                continue;
 
             int base_count = static_cast<int>(lambda);
             double frac = lambda - base_count;
 
             int k = base_count;
-            if (uni01(rng_) < frac) {
+            if (uni01(rng_) < frac)
+            {
                 k += 1;
             }
-            
+
             if (cfg_.total_invocations > 100)
                 k *= cfg_.total_invocations / 100;
-            for (int i = 0; i < k; ++i) {
+            for (int i = 0; i < k; ++i)
+            {
                 InvocationId id = next_attack_id_++;
                 // Attacks arrive at same time as victim for now.
                 TimePoint arrival = inv.arrival_time();
@@ -121,54 +131,52 @@ public:
 
                 // We also encode the victim tenant id in the label
                 // for debugging / offline analysis.
-                std::string label = "attack_on_tenant_" + std::to_string(inv.tenant_id());
+                std::string label =
+                    "attack_on_tenant_" + std::to_string(inv.tenant_id());
 
-                attacks.emplace_back(id,
-                                     cfg_.attacker_function,
-                                     cfg_.attacker_tenant,
-                                     attacker_user_,
-                                     arrival,
-                                     service_time,
-                                     label);
+                attacks.emplace_back(id, cfg_.attacker_function,
+                                     cfg_.attacker_tenant, attacker_user_,
+                                     arrival, service_time, label);
             }
         }
 
         // 3. Merge victim and attacker batches.
         batch.reserve(victims.size() + attacks.size());
-        batch.insert(batch.end(),
-                     std::make_move_iterator(victims.begin()),
+        batch.insert(batch.end(), std::make_move_iterator(victims.begin()),
                      std::make_move_iterator(victims.end()));
-        batch.insert(batch.end(),
-                     std::make_move_iterator(attacks.begin()),
+        batch.insert(batch.end(), std::make_move_iterator(attacks.begin()),
                      std::make_move_iterator(attacks.end()));
 
         return batch;
     }
 
-    bool has_more() const noexcept override {
+    bool has_more() const noexcept override
+    {
         return baseline_ && baseline_->has_more();
     }
 
     /// Optionally override the default attack service time.
-    void set_attack_service_time(Duration d) noexcept {
+    void set_attack_service_time(Duration d) noexcept
+    {
         default_attack_service_time_ = d;
     }
 
-private:
-    bool is_victim(TenantId t) const noexcept {
+  private:
+    bool is_victim(TenantId t) const noexcept
+    {
         return victim_set_.find(t) != victim_set_.end();
     }
 
-private:
+  private:
     std::unique_ptr<Workload> baseline_;
-    AttackConfig               cfg_;
+    AttackConfig cfg_;
 
     UserId attacker_user_;
     // Start attack IDs from a large offset so they do not collide
     // with IDs produced by typical workloads (which usually start at 1).
     static constexpr InvocationId kAttackIdBase = 1'000'000'000ULL;
     InvocationId next_attack_id_ = kAttackIdBase;
-    Duration     default_attack_service_time_ = 50.0;
+    Duration default_attack_service_time_ = 50.0;
 
     std::mt19937_64 rng_;
     std::unordered_set<TenantId> victim_set_;
