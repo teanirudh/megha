@@ -15,23 +15,17 @@ namespace megha
 /**
  * Configuration for an "attacker" tenant.
  *
- * - attacker_tenant / attacker_function: ids used for attack invocations
+ * - attacker_tenant: tenant id of the attacker
+ * - attacker_function: function id of the attacker
+ * - intensity: expected attack invocations per victim invocation
  * - victims: victim tenants to follow when injecting attacks
- * - attack_intensity: expected attack invocations per victim invocation
- *   (1.0 ~ one attack per victim, 2.0 ~ two, 0.5 ~ one every two victims)
- * - total_invocations: optional cap on attacker-side volume (if used)
- * - pattern: attack-side pattern label (e.g. "poisson")
  */
 struct AttackConfig
 {
-    TenantId attacker_tenant = 0;
-    FunctionId attacker_function = 0;
-
+    TenantId attacker_tenant = 999;
+    FunctionId attacker_function = 99;
     std::vector<TenantId> victims;
-    double attack_intensity = 1.0;       // ratio
-    std::uint64_t total_invocations = 1; // optional cap
-
-    std::string pattern = "poisson"; // attack pattern type
+    double intensity = 3.0;
 };
 
 /**
@@ -43,7 +37,7 @@ struct AttackConfig
  * At each next_batch(now):
  *  - Ask the baseline workload for its batch.
  *  - For each victim invocation in that batch:
- *      * Generate ~attack_intensity attacker invocations that arrive
+ *      * Generate ~intensity attacker invocations that arrive
  *        at the same time (or very slightly later, if desired).
  *  - Return baseline + attack invocations.
  *
@@ -82,12 +76,12 @@ class AttackWorkload : public Workload
 
         // 2. Prepare attacker invocations.
         std::vector<Invocation> attacks;
-        attacks.reserve(static_cast<std::size_t>(
-            victims.size() * (cfg_.attack_intensity + 1.0)));
+        attacks.reserve(
+            static_cast<std::size_t>(victims.size() * (cfg_.intensity + 1.0)));
 
-        // We implement attack_intensity using a Poisson-like process:
+        // We implement intensity using a Poisson-like process:
         // For each victim invocation:
-        //  - Let lambda = attack_intensity.
+        //  - Let lambda = intensity.
         //  - Generate k ~ Poisson(lambda) approx by:
         //      * integer part floor(lambda),
         //      * plus 1 extra attack with probability (lambda - floor(lambda)).
@@ -100,7 +94,7 @@ class AttackWorkload : public Workload
                 continue;
             }
 
-            double lambda = cfg_.attack_intensity;
+            double lambda = cfg_.intensity;
             if (lambda <= 0.0)
                 continue;
 
@@ -113,8 +107,6 @@ class AttackWorkload : public Workload
                 k += 1;
             }
 
-            if (cfg_.total_invocations > 100)
-                k *= cfg_.total_invocations / 100;
             for (int i = 0; i < k; ++i)
             {
                 InvocationId id = next_attack_id_++;

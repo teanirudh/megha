@@ -1,18 +1,21 @@
-CXX ?= g++
-CXXFLAGS ?= -std=c++17 -O2 -I./src
+CXX = g++
+CXXFLAGS = -std=c++17 -O2
 
-TARGET = kumo_experiment
-SRC = src/main_experiment.cpp
+SOURCE = src/main.cpp
+TARGET = megha
 
-.PHONY: all clean reproduce
+.PHONY: all build run plot clean
 
-all: $(TARGET)
+$(TARGET): $(SOURCE)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SOURCE)
 
-$(TARGET): $(SRC)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SRC)
+build: $(TARGET)
+
+run: $(TARGET)
+	cd exp && ../$(TARGET) configs.cfg
+
+plot:
+	python3 exp/plot.py --csv exp/results.csv --pdf exp/figures.pdf
 
 clean:
-	rm -f $(TARGET)
-
-reproduce: $(TARGET)
-	bash artifacts_reproduce.sh
+	rm -f $(TARGET) exp/results.csv exp/figures.pdf exp/trace.log

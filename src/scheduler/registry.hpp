@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "guardian_scheduler.hpp"
 #include "helper_scheduler.hpp"
 #include "random_scheduler.hpp"
 #include "scheduler.hpp"
@@ -61,6 +62,10 @@ class SchedulerRegistry
 
         register_scheduler("helper", [](std::uint64_t seed)
                            { return SchedulerPtr(new HelperScheduler(seed)); });
+
+        register_scheduler(
+            "guardian", [](std::uint64_t seed)
+            { return SchedulerPtr(new GuardianScheduler(seed)); });
     }
 
     std::unordered_map<std::string, Factory> factories_;

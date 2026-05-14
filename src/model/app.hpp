@@ -10,6 +10,18 @@ namespace megha
 {
 
 /**
+ * Per-cycle hardware counter rates for simulated telemetry.
+ */
+struct MicroarchProfile
+{
+    double llc_loads_per_cycle = 0.0;
+    double llc_stores_per_cycle = 0.0;
+    double llc_load_misses_per_cycle = 0.0;
+    double llc_store_misses_per_cycle = 0.0;
+    double instructions_per_cycle = 1.0;
+};
+
+/**
  * Resource requirements for a single function.
  *
  * These are logical units from the simulator's perspective.
@@ -18,9 +30,9 @@ namespace megha
  */
 struct ResourceConfig
 {
-    double cpu_cores = 0.0;     // e.g., 0.1, 1.0, 2.0 ...
-    std::size_t memory_mb = 0;  // in megabytes
-    std::size_t storage_mb = 0; // in megabytes
+    double cpu_cores = 0;
+    std::size_t memory_mb = 0;
+    std::size_t storage_mb = 0;
 };
 
 /**
@@ -34,23 +46,26 @@ struct FunctionProfile
 {
     FunctionId id = 0;
     TenantId tenant = 0;
-    std::string name; // human-readable, e.g., "image-resize"
+    std::string name;
 
     ResourceConfig resources;
 
-    // Packages / labels are a direct generalization of
-    // your old "reqPackages" and "label" fields.
-    // Schedulers can use this to do package- or label-aware placement.
     std::vector<std::string> packages;
-    std::string label; // optional free-form label
+    std::string label;
 
-    // Timing characteristics (all in the same time unit as TimePoint/Duration).
-    Duration cold_start_time = 200.0; // ms? configurable later
+    Duration cold_start_time = 200.0;
     Duration warm_start_time = 5.0;
-    Duration idle_timeout = 30000.0; // 30 seconds until a container cools down
+    Duration idle_timeout = 30000.0;
 
-    // Concurrency hint (how many concurrent invocations per container).
     std::size_t max_concurrency_per_container = 1;
+
+    MicroarchProfile microarch{
+        .llc_loads_per_cycle = 0.03,
+        .llc_stores_per_cycle = 0.01,
+        .llc_load_misses_per_cycle = 0.001,
+        .llc_store_misses_per_cycle = 0.0005,
+        .instructions_per_cycle = 1.0,
+    };
 };
 
 /**
