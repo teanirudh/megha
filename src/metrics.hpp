@@ -1,20 +1,17 @@
-// src/metrics/metrics.hpp
 #pragma once
 
 #include <algorithm>
 #include <cstdint>
-#include <deque>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include "common/types.hpp"
-#include "core/trace_logger.hpp"
+#include "core/logger.hpp"
 #include "model/app.hpp"
 #include "model/platform_state.hpp"
+#include "types.hpp"
 
-namespace kumo
+namespace megha
 {
 
 /**
@@ -101,7 +98,7 @@ class MetricsCollector
         return drops_for_tenant(t);
     }
 
-    /// Called when an invocation starts running on a worker (placement).
+    // Called when an invocation starts running on a worker (placement).
     void on_invocation_start(const Invocation &inv, WorkerId worker_id,
                              const PlatformState &, TimePoint now)
     {
@@ -145,7 +142,7 @@ class MetricsCollector
         tenant_counts[t] += 1;
     }
 
-    /// Called when an invocation completes on a worker.
+    // Called when an invocation completes on a worker.
     void on_invocation_complete(const Invocation &inv, WorkerId worker_id,
                                 const PlatformState & /*platform*/)
     {
@@ -175,9 +172,10 @@ class MetricsCollector
 
         // Latency accounting (finish - arrival)
         auto it = inv_exec_start_.find(inv.id());
-        // If we have an exec start time, use it; otherwise still compute end-to-end.
-        // Note: we do not know 'now' here, so we compute latency in Engine and call a new hook OR
-        // store it via a separate on_invocation_finish(). Easiest: add a finish hook.
+        // If we have an exec start time, use it; otherwise still compute
+        // end-to-end. Note: we do not know 'now' here, so we compute latency in
+        // Engine and call a new hook OR store it via a separate
+        // on_invocation_finish(). Easiest: add a finish hook.
     }
 
     void on_invocation_finish(const Invocation &inv, TimePoint now)
@@ -188,14 +186,14 @@ class MetricsCollector
         inv_exec_start_.erase(inv.id());
     }
 
-    /// NEW: record a cold start for this invocation's function.
+    // NEW: record a cold start for this invocation's function.
     void on_cold_start(const Invocation &inv, WorkerId /*worker_id*/,
                        const PlatformState & /*platform*/)
     {
         function_cold_starts_[inv.function_id()] += 1;
     }
 
-    /// NEW: record a warm start for this invocation's function.
+    // NEW: record a warm start for this invocation's function.
     void on_warm_start(const Invocation &inv, WorkerId /*worker_id*/,
                        const PlatformState & /*platform*/)
     {
@@ -206,21 +204,21 @@ class MetricsCollector
     // ---- Read-side API ----
     //
 
-    /// Total invocations started on each worker.
+    // Total invocations started on each worker.
     const std::unordered_map<WorkerId, std::uint64_t> &
     worker_invocations() const noexcept
     {
         return worker_invocations_;
     }
 
-    /// Total invocations per tenant.
+    // Total invocations per tenant.
     const std::unordered_map<TenantId, std::uint64_t> &
     tenant_invocations() const noexcept
     {
         return tenant_invocations_;
     }
 
-    /// Co-location counts between tenant pairs (canonicalized pair).
+    // Co-location counts between tenant pairs (canonicalized pair).
     const std::unordered_map<std::pair<TenantId, TenantId>, std::uint64_t,
                              TenantPairHash> &
     colocations() const noexcept
@@ -237,21 +235,21 @@ class MetricsCollector
         return (it == colocations_.end()) ? 0 : it->second;
     }
 
-    /// NEW: per-function cold start counts.
+    // NEW: per-function cold start counts.
     const std::unordered_map<FunctionId, std::uint64_t> &
     function_cold_starts() const noexcept
     {
         return function_cold_starts_;
     }
 
-    /// NEW: per-function warm start counts.
+    // NEW: per-function warm start counts.
     const std::unordered_map<FunctionId, std::uint64_t> &
     function_warm_starts() const noexcept
     {
         return function_warm_starts_;
     }
 
-    /// NEW: convenience accessors for a single function.
+    // NEW: convenience accessors for a single function.
     std::uint64_t cold_starts_for(FunctionId f) const noexcept
     {
         auto it = function_cold_starts_.find(f);
@@ -291,7 +289,7 @@ class MetricsCollector
         return it == tenant_drops_.end() ? 0 : it->second;
     }
 
-    double p95_latency_for_tenant(TenantId t) const
+    double tail_latency_for_tenant(TenantId t) const
     {
         auto it = tenant_latencies_.find(t);
         if (it == tenant_latencies_.end() || it->second.empty())
@@ -351,4 +349,4 @@ class MetricsCollector
     std::unordered_map<InvocationId, TimePoint> inv_exec_start_;
 };
 
-} // namespace kumo
+} // namespace megha

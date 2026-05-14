@@ -1,14 +1,12 @@
-// src/scheduler/random_scheduler.hpp
 #pragma once
 
 #include <random>
-#include <vector>
 
-#include "model/app.hpp"
-#include "model/platform_state.hpp"
-#include "scheduler/scheduler.hpp"
+#include "../model/app.hpp"
+#include "../model/platform_state.hpp"
+#include "scheduler.hpp"
 
-namespace kumo
+namespace megha
 {
 
 /**
@@ -64,4 +62,4 @@ class RandomScheduler : public Scheduler
     std::mt19937_64 rng_;
 };
 
-} // namespace kumo
+} // namespace megha

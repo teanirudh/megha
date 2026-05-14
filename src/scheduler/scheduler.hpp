@@ -1,12 +1,11 @@
-// src/scheduler/scheduler.hpp
 #pragma once
 
 #include <memory>
 #include <string>
 
-#include "common/types.hpp"
+#include "../types.hpp"
 
-namespace kumo
+namespace megha
 {
 
 // Forward declarations to avoid circular dependencies.
@@ -45,7 +44,7 @@ struct SchedulingDecision
 };
 
 /**
- * Abstract interface for all Kumo schedulers.
+ * Abstract interface for all megha schedulers.
  *
  * Schedulers are *stateless* with respect to the request queue:
  * the simulation engine (or "driver") owns the queue of pending
@@ -60,7 +59,7 @@ class Scheduler
   public:
     virtual ~Scheduler() = default;
 
-    /// A short human-readable name, e.g., "random", "openwhisk", "helper".
+    // A short human-readable name, e.g. "random", "helper".
     virtual std::string name() const = 0;
 
     /**
@@ -84,4 +83,4 @@ class Scheduler
  */
 using SchedulerPtr = std::unique_ptr<Scheduler>;
 
-} // namespace kumo
+} // namespace megha

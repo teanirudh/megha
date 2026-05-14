@@ -1,13 +1,12 @@
-// src/model/app.hpp
 #pragma once
 
 #include <cstddef>
 #include <string>
 #include <vector>
 
-#include "common/types.hpp"
+#include "../types.hpp"
 
-namespace kumo
+namespace megha
 {
 
 /**
@@ -35,14 +34,13 @@ struct FunctionProfile
 {
     FunctionId id = 0;
     TenantId tenant = 0;
-    UserId owner = 0; // optional (may be same as tenant)
     std::string name; // human-readable, e.g., "image-resize"
 
     ResourceConfig resources;
 
-    // Packages / labels are a direct generalization of your old "reqPackages"
-    // and "label" fields. Schedulers (like PASch) can use this to do
-    // package- or label-aware placement.
+    // Packages / labels are a direct generalization of
+    // your old "reqPackages" and "label" fields.
+    // Schedulers can use this to do package- or label-aware placement.
     std::vector<std::string> packages;
     std::string label; // optional free-form label
 
@@ -51,7 +49,7 @@ struct FunctionProfile
     Duration warm_start_time = 5.0;
     Duration idle_timeout = 30000.0; // 30 seconds until a container cools down
 
-    // Optional concurrency hint (how many concurrent invocations per container).
+    // Concurrency hint (how many concurrent invocations per container).
     std::size_t max_concurrency_per_container = 1;
 };
 
@@ -68,9 +66,9 @@ class Invocation
   public:
     Invocation() = default;
 
-    Invocation(InvocationId id, FunctionId func, TenantId tenant, UserId user,
+    Invocation(InvocationId id, FunctionId func, TenantId tenant,
                TimePoint arrival, Duration service_time, std::string label = {})
-        : id_{id}, function_id_{func}, tenant_id_{tenant}, user_id_{user},
+        : id_{id}, function_id_{func}, tenant_id_{tenant},
           arrival_time_{arrival}, service_time_{service_time},
           label_{std::move(label)}
     {
@@ -79,7 +77,6 @@ class Invocation
     InvocationId id() const noexcept { return id_; }
     FunctionId function_id() const noexcept { return function_id_; }
     TenantId tenant_id() const noexcept { return tenant_id_; }
-    UserId user_id() const noexcept { return user_id_; }
 
     TimePoint arrival_time() const noexcept { return arrival_time_; }
     Duration service_time() const noexcept { return service_time_; }
@@ -94,7 +91,6 @@ class Invocation
     InvocationId id_ = 0;
     FunctionId function_id_ = 0;
     TenantId tenant_id_ = 0;
-    UserId user_id_ = 0;
 
     TimePoint arrival_time_ = 0.0;
     Duration service_time_ = 0.0;
@@ -102,4 +98,4 @@ class Invocation
     std::string label_;
 };
 
-} // namespace kumo
+} // namespace megha

@@ -1,4 +1,3 @@
-// AttackWorkload.hpp
 #pragma once
 
 #include <memory>
@@ -6,22 +5,22 @@
 #include <unordered_set>
 #include <vector>
 
-#include "common/types.hpp"
-#include "model/app.hpp"
-#include "workload/workload.hpp"
+#include "../model/app.hpp"
+#include "../types.hpp"
+#include "workload.hpp"
 
-namespace kumo
+namespace megha
 {
 
 /**
  * Configuration for an "attacker" tenant.
  *
- * - attacker_tenant: tenant id for all attack invocations
- * - attacker_function: function id for the attack function
- * - victims: set of victim tenants we want to "follow"
- * - attack_per_victim: expected number of attack invocations per victim
- *   invocation (e.g., 1.0 = ~1 attack per victim, 2.0 = ~2 attacks per
- *   victim, 0.5 = ~1 attack every 2 victim invocations).
+ * - attacker_tenant / attacker_function: ids used for attack invocations
+ * - victims: victim tenants to follow when injecting attacks
+ * - attack_intensity: expected attack invocations per victim invocation
+ *   (1.0 ~ one attack per victim, 2.0 ~ two, 0.5 ~ one every two victims)
+ * - total_invocations: optional cap on attacker-side volume (if used)
+ * - pattern: attack-side pattern label (e.g. "poisson")
  */
 struct AttackConfig
 {
@@ -29,11 +28,9 @@ struct AttackConfig
     FunctionId attacker_function = 0;
 
     std::vector<TenantId> victims;
-    double attack_per_victim = 1.0;      // ratio
+    double attack_intensity = 1.0;       // ratio
     std::uint64_t total_invocations = 1; // optional cap
 
-    // Optional: user field can be same as attacker_tenant or separate.
-    UserId attacker_user = 0;
     std::string pattern = "poisson"; // attack pattern type
 };
 
@@ -46,7 +43,7 @@ struct AttackConfig
  * At each next_batch(now):
  *  - Ask the baseline workload for its batch.
  *  - For each victim invocation in that batch:
- *      * Generate ~attack_per_victim attacker invocations that arrive
+ *      * Generate ~attack_intensity attacker invocations that arrive
  *        at the same time (or very slightly later, if desired).
  *  - Return baseline + attack invocations.
  *
@@ -61,10 +58,6 @@ class AttackWorkload : public Workload
         : baseline_(std::move(baseline)), cfg_(std::move(cfg)),
           rng_(seed ? seed : std::random_device{}())
     {
-        attacker_user_ = (cfg_.attacker_user != 0)
-                             ? cfg_.attacker_user
-                             : static_cast<UserId>(cfg_.attacker_tenant);
-
         victim_set_.reserve(cfg_.victims.size());
         for (auto t : cfg_.victims)
         {
@@ -90,11 +83,11 @@ class AttackWorkload : public Workload
         // 2. Prepare attacker invocations.
         std::vector<Invocation> attacks;
         attacks.reserve(static_cast<std::size_t>(
-            victims.size() * (cfg_.attack_per_victim + 1.0)));
+            victims.size() * (cfg_.attack_intensity + 1.0)));
 
-        // We implement attack_per_victim using a Poisson-like process:
+        // We implement attack_intensity using a Poisson-like process:
         // For each victim invocation:
-        //  - Let lambda = attack_per_victim.
+        //  - Let lambda = attack_intensity.
         //  - Generate k ~ Poisson(lambda) approx by:
         //      * integer part floor(lambda),
         //      * plus 1 extra attack with probability (lambda - floor(lambda)).
@@ -107,7 +100,7 @@ class AttackWorkload : public Workload
                 continue;
             }
 
-            double lambda = cfg_.attack_per_victim;
+            double lambda = cfg_.attack_intensity;
             if (lambda <= 0.0)
                 continue;
 
@@ -135,8 +128,8 @@ class AttackWorkload : public Workload
                     "attack_on_tenant_" + std::to_string(inv.tenant_id());
 
                 attacks.emplace_back(id, cfg_.attacker_function,
-                                     cfg_.attacker_tenant, attacker_user_,
-                                     arrival, service_time, label);
+                                     cfg_.attacker_tenant, arrival,
+                                     service_time, label);
             }
         }
 
@@ -155,7 +148,7 @@ class AttackWorkload : public Workload
         return baseline_ && baseline_->has_more();
     }
 
-    /// Optionally override the default attack service time.
+    // Optionally override the default attack service time.
     void set_attack_service_time(Duration d) noexcept
     {
         default_attack_service_time_ = d;
@@ -171,7 +164,6 @@ class AttackWorkload : public Workload
     std::unique_ptr<Workload> baseline_;
     AttackConfig cfg_;
 
-    UserId attacker_user_;
     // Start attack IDs from a large offset so they do not collide
     // with IDs produced by typical workloads (which usually start at 1).
     static constexpr InvocationId kAttackIdBase = 1'000'000'000ULL;
@@ -182,4 +174,4 @@ class AttackWorkload : public Workload
     std::unordered_set<TenantId> victim_set_;
 };
 
-} // namespace kumo
+} // namespace megha

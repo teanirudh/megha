@@ -4,7 +4,7 @@
 #include <mutex>
 #include <string>
 
-namespace kumo
+namespace megha
 {
 
 class TraceLogger
@@ -57,4 +57,4 @@ class TraceLogger
     static inline std::mutex mu_;
 };
 
-} // namespace kumo
+} // namespace megha

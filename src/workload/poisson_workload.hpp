@@ -1,16 +1,14 @@
-// src/workload/poisson_workload.hpp
 #pragma once
 
 #include <algorithm>
 #include <cmath>
 #include <random>
-#include <string>
 #include <vector>
 
-#include "common/types.hpp"
-#include "workload/workload.hpp"
+#include "../types.hpp"
+#include "workload.hpp"
 
-namespace kumo
+namespace megha
 {
 
 /**
@@ -118,7 +116,6 @@ class PoissonWorkload : public Workload
 
             Duration svc = sample_service_time_();
             batch.emplace_back(inv_id, func, tenant,
-                               /*user*/ tenant,
                                /*arrival_time*/ next_arrival_time_, svc);
             generated_ += 1;
             if (generated_ >= total_invocations_)
@@ -177,4 +174,4 @@ class PoissonWorkload : public Workload
     }
 };
 
-} // namespace kumo
+} // namespace megha

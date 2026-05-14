@@ -1,10 +1,9 @@
-// src/common/types.hpp
 #pragma once
 
 #include <cstdint>
 #include <string>
 
-namespace kumo
+namespace megha
 {
 
 /**
@@ -12,7 +11,6 @@ namespace kumo
  * Having strong typedefs keeps function signatures clear.
  */
 using TenantId = std::uint32_t;
-using UserId = std::uint32_t;
 using FunctionId = std::uint32_t;   // logical "function" / app type
 using InvocationId = std::uint64_t; // individual invocation/request
 using WorkerId = std::uint32_t;     // node / invoker
@@ -30,15 +28,14 @@ using TimePoint = double;
 using Duration = double;
 
 /**
- * Optional tag for grouping functions into tenants / users.
+ * Optional tag for grouping functions into tenants.
  * This is mostly convenience for future logging / metrics
  */
 struct Identity
 {
     TenantId tenant = 0;
-    UserId user = 0;
     FunctionId function = 0;
     InvocationId invocation = 0;
 };
 
-} // namespace kumo
+} // namespace megha

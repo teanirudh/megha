@@ -1,15 +1,14 @@
-// src/model/platform_state.hpp
 #pragma once
 
 #include <stdexcept>
 #include <unordered_map>
 #include <vector>
 
-#include "common/types.hpp"
-#include "model/app.hpp" // for FunctionProfile and ResourceConfig
-#include "model/container.hpp"
+#include "../types.hpp"
+#include "app.hpp"
+#include "container.hpp"
 
-namespace kumo
+namespace megha
 {
 
 /**
@@ -94,7 +93,7 @@ class PlatformState
     // ---- Queries (scheduler-facing) ----
     //
 
-    /// List of all workers' IDs. Keeps compatibility with your RandomScheduler test.
+    // List of all workers' IDs.
     std::vector<WorkerId> workers() const
     {
         std::vector<WorkerId> ids;
@@ -106,7 +105,7 @@ class PlatformState
         return ids;
     }
 
-    /// More detailed access to a worker's state.
+    // More detailed access to a worker's state.
     const WorkerView &worker_view(WorkerId id) const
     {
         auto idx = static_cast<std::size_t>(id);
@@ -117,10 +116,10 @@ class PlatformState
         return workers_[idx];
     }
 
-    /// Number of workers.
+    // Number of workers.
     std::size_t num_workers() const noexcept { return workers_.size(); }
 
-    /// Lookup a function profile by FunctionId; returns nullptr if not found.
+    // Lookup a function profile by FunctionId; returns nullptr if not found.
     const FunctionProfile *get_function(FunctionId id) const noexcept
     {
         auto it = functions_.find(id);
@@ -153,4 +152,4 @@ class PlatformState
     std::unordered_map<FunctionId, FunctionProfile> functions_;
 };
 
-} // namespace kumo
+} // namespace megha

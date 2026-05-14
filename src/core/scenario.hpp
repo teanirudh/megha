@@ -1,13 +1,10 @@
-// src/core/scenario.hpp
 #pragma once
 
-#include <memory>
+#include "../types.hpp"
+#include "../workload/workload.hpp"
+#include "engine.hpp"
 
-#include "common/types.hpp"
-#include "core/engine.hpp"
-#include "workload/workload.hpp"
-
-namespace kumo
+namespace megha
 {
 
 /**
@@ -28,10 +25,10 @@ class Scenario
   public:
     virtual ~Scenario() = default;
 
-    /// Run the scenario to completion.
+    // Run the scenario to completion.
     virtual void run() = 0;
 
-    /// Access the underlying engine (for inspection / results).
+    // Access the underlying engine (for inspection / results).
     virtual Engine &engine() = 0;
     virtual const Engine &engine() const = 0;
 };
@@ -87,4 +84,4 @@ class SingleWorkloadScenario : public Scenario
     Duration time_step_;
 };
 
-} // namespace kumo
+} // namespace megha

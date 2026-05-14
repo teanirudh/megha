@@ -1,8 +1,10 @@
 #pragma once
-#include "common/types.hpp"
+
 #include <cstdint>
 
-namespace kumo
+#include "../types.hpp"
+
+namespace megha
 {
 
 /**
@@ -10,8 +12,8 @@ namespace kumo
  */
 enum class EventType : std::uint8_t
 {
-    InvocationStart, // An invocation arrives (we choose placement & start delay)
-    InvocationExecute, // Invocation actually begins executing inside a container
+    InvocationStart,    // An invocation arrives (we choose placement & delay)
+    InvocationExecute,  // Invocation begins executing inside a container
     InvocationComplete, // Invocation execution completes
     ContainerCool,      // idle timeout reached
 };
@@ -91,4 +93,4 @@ struct EventTimeGreater
     }
 };
 
-} // namespace kumo
+} // namespace megha

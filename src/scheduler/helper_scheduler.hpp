@@ -4,11 +4,11 @@
 #include <unordered_map>
 #include <vector>
 
-#include "model/app.hpp"
-#include "model/platform_state.hpp"
-#include "scheduler/scheduler.hpp"
+#include "../model/app.hpp"
+#include "../model/platform_state.hpp"
+#include "scheduler.hpp"
 
-namespace kumo
+namespace megha
 {
 
 /**
@@ -64,7 +64,8 @@ class HelperScheduler : public Scheduler
 
         auto &freq_map = inv_freq_[inv.function_id()]; // worker -> counter
 
-        // Case 1: function has never been scheduled -> pick random healthy worker
+        // Case 1: function never been scheduled:
+        // pick random healthy worker
         if (freq_map.empty())
         {
             WorkerId wid = pick_random(healthy);
@@ -72,8 +73,8 @@ class HelperScheduler : public Scheduler
             return SchedulingDecision::ok(wid);
         }
 
-        // Case 2: function has some workers already; try to stay on one
-        // that doesn't exceed threshold.
+        // Case 2: function has some workers already:
+        // try to stay on one that doesn't exceed threshold.
         std::vector<WorkerId> existing_workers;
         existing_workers.reserve(freq_map.size());
         for (const auto &kv : freq_map)
@@ -87,7 +88,8 @@ class HelperScheduler : public Scheduler
 
         if (!existing_workers.empty())
         {
-            // Randomly pick among existing hosts and see if it's still "low freq".
+            // Randomly pick among existing hosts and
+            // check if it's still "low freq".
             WorkerId chosen = pick_random(existing_workers);
             if (maintain_inv_freq(inv.function_id(), chosen))
             {
@@ -138,18 +140,20 @@ class HelperScheduler : public Scheduler
         return ws[dist(rng_)];
     }
 
-    // Return true if still "low frequency"; false if threshold would be exceeded.
+    // Return true if still "low frequency"
+    // false if threshold would be exceeded.
     bool maintain_inv_freq(FunctionId func, WorkerId wid)
     {
         auto &freq_map = inv_freq_[func];
 
-        // If this worker is new for this function, insert with a small starting value.
+        // If this worker is new for this function,
+        // insert with a small starting value.
         auto it = freq_map.find(wid);
         if (it == freq_map.end())
         {
             freq_map[wid] = 1;
 
-            // Optional: small decay of OTHER workers for this function (not global).
+            // Small decay of other workers for this function (not global).
             decay_func_except(freq_map, wid);
             return true;
         }
@@ -191,4 +195,4 @@ class HelperScheduler : public Scheduler
     }
 };
 
-} // namespace kumo
+} // namespace megha

@@ -1,22 +1,18 @@
 #pragma once
 
 #include <algorithm>
-#include <deque>
-#include <queue>
 #include <stdexcept>
-#include <unordered_map>
-#include <vector>
 
-#include "common/types.hpp"
-#include "core/event.hpp"
-#include "core/trace_logger.hpp"
-#include "metrics/metrics.hpp"
-#include "model/app.hpp"
-#include "model/container.hpp"
-#include "model/platform_state.hpp"
-#include "scheduler/scheduler.hpp"
+#include "../metrics.hpp"
+#include "../model/app.hpp"
+#include "../model/container.hpp"
+#include "../model/platform_state.hpp"
+#include "../scheduler/scheduler.hpp"
+#include "../types.hpp"
+#include "event.hpp"
+#include "logger.hpp"
 
-namespace kumo
+namespace megha
 {
 
 /**
@@ -54,15 +50,15 @@ class Engine
 
     void set_max_queue_len(std::size_t n) { max_queue_len_ = n; }
 
-    /// Current simulation time.
+    // Current simulation time.
     TimePoint now() const noexcept { return current_time_; }
 
-    /// Access metrics (mutable and const).
+    // Access metrics (mutable and const).
     MetricsCollector &metrics() noexcept { return metrics_; }
 
     const MetricsCollector &metrics() const noexcept { return metrics_; }
 
-    /// Enqueue a single invocation as an event-driven job.
+    // Enqueue a single invocation as an event-driven job.
     void enqueue_invocation(const Invocation &inv)
     {
         const auto id = inv.id();
@@ -75,7 +71,7 @@ class Engine
             Event::invocation_start(inv.arrival_time(), id, inv.function_id()));
     }
 
-    /// Enqueue a batch of invocations.
+    // Enqueue a batch of invocations.
     void enqueue_invocations(const std::vector<Invocation> &invs)
     {
         for (const auto &inv : invs)
@@ -84,7 +80,7 @@ class Engine
         }
     }
 
-    /// Run the simulation until there are no more events.
+    // Run the simulation until there are no more events.
     void run()
     {
         while (!events_.empty())
@@ -93,7 +89,7 @@ class Engine
         }
     }
 
-    /// Run until next event time > `until`.
+    // Run until next event time > `until`.
     void run_until(TimePoint until)
     {
         while (!events_.empty())
@@ -111,16 +107,16 @@ class Engine
         }
     }
 
-    /// Access the platform state (for inspection / metrics).
+    // Access the platform state (for inspection / metrics).
     const PlatformState &platform() const noexcept { return platform_; }
 
-    /// Number of invocations that failed to schedule or run.
+    // Number of invocations that failed to schedule or run.
     std::size_t num_failed_invocations() const noexcept
     {
         return failed_invocations_.size();
     }
 
-    /// IDs of invocations that failed.
+    // IDs of invocations that failed.
     const std::vector<InvocationId> &failed_invocations() const noexcept
     {
         return failed_invocations_;
@@ -197,7 +193,7 @@ class Engine
             c.lifetime_invocations = 0;
             w.containers.push_back(c);
 
-            // Also track warm_functions: this worker now has a warmable container
+            // Track warm_functions: this worker now has a warmable container
             if (std::find(w.warm_functions.begin(), w.warm_functions.end(),
                           inv.function_id()) == w.warm_functions.end())
             {
@@ -275,7 +271,6 @@ class Engine
             if (q.size() >= max_queue_len_)
             {
                 // hard drop (this is the only real "failed" in DoS model)
-                // std::cout << "[drop] t=" << current_time_ << " inv=" << inv.id() << " worker=" << wid << std::endl;
                 failed_invocations_.push_back(inv.id());
                 metrics_.on_invocation_drop(inv, wid, current_time_);
 
@@ -430,7 +425,7 @@ class Engine
             if (nit != inv_map_.end())
             {
                 const Invocation &next_inv = nit->second;
-                // start immediately (no extra cold/warm delay; that was already paid)
+                // start immediately (no extra cold/warm delay; already paid)
                 events_.push(Event::invocation_execute(
                     current_time_, next_inv.id(), next_inv.function_id(), wid));
                 if (TraceLogger::enabled())
@@ -521,4 +516,4 @@ class Engine
     std::size_t max_queue_len_ = 100; // default; make configurable later
 };
 
-} // namespace kumo
+} // namespace megha

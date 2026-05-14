@@ -1,21 +1,13 @@
-// src/scheduler/registry.hpp
 #pragma once
 
-#include <functional>
-#include <memory>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
 
-#include "scheduler/helper_scheduler.hpp"
-#include "scheduler/openwhisk_scheduler.hpp"
-#include "scheduler/openwhisk_warm_scheduler.hpp"
-#include "scheduler/pasch_scheduler.hpp"
-#include "scheduler/random_scheduler.hpp"
-#include "scheduler/scheduler.hpp"
-#include "scheduler/spread_scheduler.hpp"
+#include "helper_scheduler.hpp"
+#include "random_scheduler.hpp"
+#include "scheduler.hpp"
 
-namespace kumo
+namespace megha
 {
 
 /**
@@ -23,7 +15,7 @@ namespace kumo
  *
  * Usage:
  *   auto& reg = SchedulerRegistry::instance();
- *   auto sched = reg.create("spread", /*seed* / 123);
+ *   auto sched = reg.create("random", seed_uint64);
  */
 class SchedulerRegistry
 {
@@ -36,13 +28,14 @@ class SchedulerRegistry
         return inst;
     }
 
-    /// Register a scheduler factory under a given name.
+    // Register a scheduler factory under a given name.
     void register_scheduler(const std::string &name, Factory factory)
     {
         factories_[name] = std::move(factory);
     }
 
-    /// Create a scheduler by name. Throws std::invalid_argument on unknown name.
+    // Create a scheduler by name.
+    // Throws std::invalid_argument on unknown name.
     SchedulerPtr create(const std::string &name, std::uint64_t seed) const
     {
         auto it = factories_.find(name);
@@ -53,7 +46,7 @@ class SchedulerRegistry
         return it->second(seed);
     }
 
-    /// Check if a scheduler name is known.
+    // Check if a scheduler name is known.
     bool has(const std::string &name) const noexcept
     {
         return factories_.find(name) != factories_.end();
@@ -66,25 +59,11 @@ class SchedulerRegistry
         register_scheduler("random", [](std::uint64_t seed)
                            { return SchedulerPtr(new RandomScheduler(seed)); });
 
-        register_scheduler("spread", [](std::uint64_t seed)
-                           { return SchedulerPtr(new SpreadScheduler(seed)); });
-
-        register_scheduler(
-            "openwhisk", [](std::uint64_t seed)
-            { return SchedulerPtr(new OpenWhiskScheduler(seed)); });
-
-        register_scheduler(
-            "openwhisk_warm", [](std::uint64_t seed)
-            { return SchedulerPtr(new OpenWhiskWarmScheduler(seed)); });
-
         register_scheduler("helper", [](std::uint64_t seed)
                            { return SchedulerPtr(new HelperScheduler(seed)); });
-
-        register_scheduler("pasch", [](std::uint64_t seed)
-                           { return SchedulerPtr(new PASchScheduler(seed)); });
     }
 
     std::unordered_map<std::string, Factory> factories_;
 };
 
-} // namespace kumo
+} // namespace megha
