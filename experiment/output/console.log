@@ -1,0 +1,583 @@
+================================================================================
+
+experiment:
+  schedulers              = random,helper,guardian
+  seeds                   = 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
+
+platform:
+  num_tenants             = 64
+  num_workers             = 32
+  total_invocations       = 64000
+  functions_per_tenant    = 4
+  batch_size              = 1024
+
+workload:
+  workload                = poisson
+  mean_service_time       = 20
+  arrival_rate            = 20
+  idle_timeout            = 120
+  time_step               = 1
+
+attacker:
+  attacker.enabled        = 1
+  attacker.tenant         = 999
+  attacker.function       = 99
+  attacker.intensity      = 3
+
+worker:
+  worker.cpu_cores        = 4
+  worker.memory_mb        = 4096
+  worker.storage_mb       = 200
+  worker.queue_size       = 32
+
+--------------------------------------------------------------------------------
+
+[seed-1] 
+  scheduler               = random
+  goodput                 = 21.2739
+  tail_latency            = 67.9497
+  cold_start_rate         = 0.638512
+  colocation_probability  = 0.987588
+
+--------------------------------------------------------------------------------
+
+[seed-2] 
+  scheduler               = random
+  goodput                 = 20.796
+  tail_latency            = 67.3673
+  cold_start_rate         = 0.646526
+  colocation_probability  = 0.983994
+
+--------------------------------------------------------------------------------
+
+[seed-3] 
+  scheduler               = random
+  goodput                 = 21.1997
+  tail_latency            = 66.864
+  cold_start_rate         = 0.643359
+  colocation_probability  = 0.985205
+
+--------------------------------------------------------------------------------
+
+[seed-4] 
+  scheduler               = random
+  goodput                 = 21.064
+  tail_latency            = 66.4917
+  cold_start_rate         = 0.641721
+  colocation_probability  = 0.987646
+
+--------------------------------------------------------------------------------
+
+[seed-5] 
+  scheduler               = random
+  goodput                 = 20.9229
+  tail_latency            = 67.2117
+  cold_start_rate         = 0.641503
+  colocation_probability  = 0.986811
+
+--------------------------------------------------------------------------------
+
+[seed-6] 
+  scheduler               = random
+  goodput                 = 21.3696
+  tail_latency            = 67.8204
+  cold_start_rate         = 0.63873
+  colocation_probability  = 0.986401
+
+--------------------------------------------------------------------------------
+
+[seed-7] 
+  scheduler               = random
+  goodput                 = 21.1211
+  tail_latency            = 67.0306
+  cold_start_rate         = 0.643102
+  colocation_probability  = 0.987854
+
+--------------------------------------------------------------------------------
+
+[seed-8] 
+  scheduler               = random
+  goodput                 = 20.8612
+  tail_latency            = 67.6508
+  cold_start_rate         = 0.63986
+  colocation_probability  = 0.986597
+
+--------------------------------------------------------------------------------
+
+[seed-9] 
+  scheduler               = random
+  goodput                 = 21.0723
+  tail_latency            = 67.5499
+  cold_start_rate         = 0.640192
+  colocation_probability  = 0.988621
+
+--------------------------------------------------------------------------------
+
+[seed-10] 
+  scheduler               = random
+  goodput                 = 21.0156
+  tail_latency            = 67.2765
+  cold_start_rate         = 0.642553
+  colocation_probability  = 0.984673
+
+--------------------------------------------------------------------------------
+
+[seed-11] 
+  scheduler               = random
+  goodput                 = 20.9405
+  tail_latency            = 67.544
+  cold_start_rate         = 0.640851
+  colocation_probability  = 0.981519
+
+--------------------------------------------------------------------------------
+
+[seed-12] 
+  scheduler               = random
+  goodput                 = 21.3161
+  tail_latency            = 67.6
+  cold_start_rate         = 0.63959
+  colocation_probability  = 0.989351
+
+--------------------------------------------------------------------------------
+
+[seed-13] 
+  scheduler               = random
+  goodput                 = 21.0885
+  tail_latency            = 67.293
+  cold_start_rate         = 0.636474
+  colocation_probability  = 0.987722
+
+--------------------------------------------------------------------------------
+
+[seed-14] 
+  scheduler               = random
+  goodput                 = 21.1995
+  tail_latency            = 66.8619
+  cold_start_rate         = 0.643291
+  colocation_probability  = 0.986746
+
+--------------------------------------------------------------------------------
+
+[seed-15] 
+  scheduler               = random
+  goodput                 = 21.2907
+  tail_latency            = 67.592
+  cold_start_rate         = 0.637655
+  colocation_probability  = 0.986324
+
+--------------------------------------------------------------------------------
+
+[seed-16] 
+  scheduler               = random
+  goodput                 = 21.0567
+  tail_latency            = 67.2317
+  cold_start_rate         = 0.639347
+  colocation_probability  = 0.98714
+
+--------------------------------------------------------------------------------
+
+[seed-17] 
+  scheduler               = random
+  goodput                 = 21.2957
+  tail_latency            = 66.9184
+  cold_start_rate         = 0.639329
+  colocation_probability  = 0.986333
+
+--------------------------------------------------------------------------------
+
+[seed-18] 
+  scheduler               = random
+  goodput                 = 21.3238
+  tail_latency            = 67.2795
+  cold_start_rate         = 0.63764
+  colocation_probability  = 0.985593
+
+--------------------------------------------------------------------------------
+
+[seed-19] 
+  scheduler               = random
+  goodput                 = 21.032
+  tail_latency            = 66.608
+  cold_start_rate         = 0.639191
+  colocation_probability  = 0.985587
+
+--------------------------------------------------------------------------------
+
+[seed-20] 
+  scheduler               = random
+  goodput                 = 21.0386
+  tail_latency            = 67.9054
+  cold_start_rate         = 0.638224
+  colocation_probability  = 0.989389
+
+--------------------------------------------------------------------------------
+
+[seed-1] 
+  scheduler               = helper
+  goodput                 = 21.2678
+  tail_latency            = 76.4586
+  cold_start_rate         = 0.40363
+  colocation_probability  = 0.448507
+
+--------------------------------------------------------------------------------
+
+[seed-2] 
+  scheduler               = helper
+  goodput                 = 20.7312
+  tail_latency            = 75.63
+  cold_start_rate         = 0.379678
+  colocation_probability  = 0.424148
+
+--------------------------------------------------------------------------------
+
+[seed-3] 
+  scheduler               = helper
+  goodput                 = 21.2125
+  tail_latency            = 75.811
+  cold_start_rate         = 0.384795
+  colocation_probability  = 0.426698
+
+--------------------------------------------------------------------------------
+
+[seed-4] 
+  scheduler               = helper
+  goodput                 = 21.0556
+  tail_latency            = 74.0111
+  cold_start_rate         = 0.376708
+  colocation_probability  = 0.389316
+
+--------------------------------------------------------------------------------
+
+[seed-5] 
+  scheduler               = helper
+  goodput                 = 20.906
+  tail_latency            = 74.9669
+  cold_start_rate         = 0.379095
+  colocation_probability  = 0.477173
+
+--------------------------------------------------------------------------------
+
+[seed-6] 
+  scheduler               = helper
+  goodput                 = 21.2347
+  tail_latency            = 75.4101
+  cold_start_rate         = 0.403409
+  colocation_probability  = 0.458043
+
+--------------------------------------------------------------------------------
+
+[seed-7] 
+  scheduler               = helper
+  goodput                 = 21.1677
+  tail_latency            = 73.8415
+  cold_start_rate         = 0.375981
+  colocation_probability  = 0.452767
+
+--------------------------------------------------------------------------------
+
+[seed-8] 
+  scheduler               = helper
+  goodput                 = 20.8322
+  tail_latency            = 76.6087
+  cold_start_rate         = 0.403597
+  colocation_probability  = 0.492645
+
+--------------------------------------------------------------------------------
+
+[seed-9] 
+  scheduler               = helper
+  goodput                 = 21.0645
+  tail_latency            = 76.8307
+  cold_start_rate         = 0.390316
+  colocation_probability  = 0.442436
+
+--------------------------------------------------------------------------------
+
+[seed-10] 
+  scheduler               = helper
+  goodput                 = 21.0628
+  tail_latency            = 74.9488
+  cold_start_rate         = 0.390905
+  colocation_probability  = 0.452316
+
+--------------------------------------------------------------------------------
+
+[seed-11] 
+  scheduler               = helper
+  goodput                 = 20.9804
+  tail_latency            = 75.9476
+  cold_start_rate         = 0.395897
+  colocation_probability  = 0.50504
+
+--------------------------------------------------------------------------------
+
+[seed-12] 
+  scheduler               = helper
+  goodput                 = 21.3024
+  tail_latency            = 74.5241
+  cold_start_rate         = 0.400453
+  colocation_probability  = 0.470797
+
+--------------------------------------------------------------------------------
+
+[seed-13] 
+  scheduler               = helper
+  goodput                 = 21.0755
+  tail_latency            = 76.4085
+  cold_start_rate         = 0.396671
+  colocation_probability  = 0.496931
+
+--------------------------------------------------------------------------------
+
+[seed-14] 
+  scheduler               = helper
+  goodput                 = 21.1943
+  tail_latency            = 75.1909
+  cold_start_rate         = 0.38399
+  colocation_probability  = 0.436713
+
+--------------------------------------------------------------------------------
+
+[seed-15] 
+  scheduler               = helper
+  goodput                 = 21.3362
+  tail_latency            = 78.3933
+  cold_start_rate         = 0.403321
+  colocation_probability  = 0.459306
+
+--------------------------------------------------------------------------------
+
+[seed-16] 
+  scheduler               = helper
+  goodput                 = 21.0537
+  tail_latency            = 74.9504
+  cold_start_rate         = 0.392136
+  colocation_probability  = 0.448731
+
+--------------------------------------------------------------------------------
+
+[seed-17] 
+  scheduler               = helper
+  goodput                 = 21.2921
+  tail_latency            = 74.5787
+  cold_start_rate         = 0.394521
+  colocation_probability  = 0.412333
+
+--------------------------------------------------------------------------------
+
+[seed-18] 
+  scheduler               = helper
+  goodput                 = 21.3524
+  tail_latency            = 74.7027
+  cold_start_rate         = 0.397132
+  colocation_probability  = 0.483301
+
+--------------------------------------------------------------------------------
+
+[seed-19] 
+  scheduler               = helper
+  goodput                 = 21.095
+  tail_latency            = 74.265
+  cold_start_rate         = 0.379959
+  colocation_probability  = 0.44269
+
+--------------------------------------------------------------------------------
+
+[seed-20] 
+  scheduler               = helper
+  goodput                 = 21.0824
+  tail_latency            = 76.1141
+  cold_start_rate         = 0.414142
+  colocation_probability  = 0.486174
+
+--------------------------------------------------------------------------------
+
+[seed-1] 
+  scheduler               = guardian
+  goodput                 = 21.2188
+  tail_latency            = 76.2193
+  cold_start_rate         = 0.577478
+  colocation_probability  = 0.0583697
+
+--------------------------------------------------------------------------------
+
+[seed-2] 
+  scheduler               = guardian
+  goodput                 = 20.7947
+  tail_latency            = 77.4178
+  cold_start_rate         = 0.573132
+  colocation_probability  = 0.0344468
+
+--------------------------------------------------------------------------------
+
+[seed-3] 
+  scheduler               = guardian
+  goodput                 = 21.1625
+  tail_latency            = 74.8422
+  cold_start_rate         = 0.561038
+  colocation_probability  = 0.0174849
+
+--------------------------------------------------------------------------------
+
+[seed-4] 
+  scheduler               = guardian
+  goodput                 = 20.9016
+  tail_latency            = 76.7601
+  cold_start_rate         = 0.569418
+  colocation_probability  = 0.0360601
+
+--------------------------------------------------------------------------------
+
+[seed-5] 
+  scheduler               = guardian
+  goodput                 = 20.9451
+  tail_latency            = 77.4024
+  cold_start_rate         = 0.566357
+  colocation_probability  = 0.0277308
+
+--------------------------------------------------------------------------------
+
+[seed-6] 
+  scheduler               = guardian
+  goodput                 = 21.1787
+  tail_latency            = 78.653
+  cold_start_rate         = 0.571114
+  colocation_probability  = 0.0613599
+
+--------------------------------------------------------------------------------
+
+[seed-7] 
+  scheduler               = guardian
+  goodput                 = 20.7991
+  tail_latency            = 78.6066
+  cold_start_rate         = 0.581984
+  colocation_probability  = 0.074224
+
+--------------------------------------------------------------------------------
+
+[seed-8] 
+  scheduler               = guardian
+  goodput                 = 20.7686
+  tail_latency            = 78.6784
+  cold_start_rate         = 0.584706
+  colocation_probability  = 0.107878
+
+--------------------------------------------------------------------------------
+
+[seed-9] 
+  scheduler               = guardian
+  goodput                 = 21.0349
+  tail_latency            = 77.7506
+  cold_start_rate         = 0.567115
+  colocation_probability  = 0.0341365
+
+--------------------------------------------------------------------------------
+
+[seed-10] 
+  scheduler               = guardian
+  goodput                 = 21.0109
+  tail_latency            = 78.0985
+  cold_start_rate         = 0.573234
+  colocation_probability  = 0.0487057
+
+--------------------------------------------------------------------------------
+
+[seed-11] 
+  scheduler               = guardian
+  goodput                 = 20.8563
+  tail_latency            = 78.0973
+  cold_start_rate         = 0.578104
+  colocation_probability  = 0.0722446
+
+--------------------------------------------------------------------------------
+
+[seed-12] 
+  scheduler               = guardian
+  goodput                 = 21.1123
+  tail_latency            = 78.9965
+  cold_start_rate         = 0.572697
+  colocation_probability  = 0.0519522
+
+--------------------------------------------------------------------------------
+
+[seed-13] 
+  scheduler               = guardian
+  goodput                 = 21.0418
+  tail_latency            = 77.8461
+  cold_start_rate         = 0.56354
+  colocation_probability  = 0.0290792
+
+--------------------------------------------------------------------------------
+
+[seed-14] 
+  scheduler               = guardian
+  goodput                 = 21.1908
+  tail_latency            = 70.461
+  cold_start_rate         = 0.560791
+  colocation_probability  = 0.00198807
+
+--------------------------------------------------------------------------------
+
+[seed-15] 
+  scheduler               = guardian
+  goodput                 = 21.2524
+  tail_latency            = 76.5269
+  cold_start_rate         = 0.563416
+  colocation_probability  = 0.0340227
+
+--------------------------------------------------------------------------------
+
+[seed-16] 
+  scheduler               = guardian
+  goodput                 = 21.0157
+  tail_latency            = 76.0835
+  cold_start_rate         = 0.565045
+  colocation_probability  = 0.0145516
+
+--------------------------------------------------------------------------------
+
+[seed-17] 
+  scheduler               = guardian
+  goodput                 = 21.2318
+  tail_latency            = 71.5537
+  cold_start_rate         = 0.561055
+  colocation_probability  = 0.00266667
+
+--------------------------------------------------------------------------------
+
+[seed-18] 
+  scheduler               = guardian
+  goodput                 = 21.1869
+  tail_latency            = 75.3418
+  cold_start_rate         = 0.56558
+  colocation_probability  = 0.0337263
+
+--------------------------------------------------------------------------------
+
+[seed-19] 
+  scheduler               = guardian
+  goodput                 = 21.0191
+  tail_latency            = 71.2352
+  cold_start_rate         = 0.561381
+  colocation_probability  = 0.00205903
+
+--------------------------------------------------------------------------------
+
+[seed-20] 
+  scheduler               = guardian
+  goodput                 = 20.992
+  tail_latency            = 76.6328
+  cold_start_rate         = 0.559525
+  colocation_probability  = 0.0157556
+
+--------------------------------------------------------------------------------
+
+elapsed_time: 8.75 s
+
+metrics:
+  goodput                 = (total_arrivals - total_drops) / simulation_time
+  tail_latency            = percentile_95_latency
+  cold_start_rate         = cold_starts / (cold_starts + warm_starts)
+  colocation_probability  = total_colocations / total_victim_arrivals
+
+================================================================================
