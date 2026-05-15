@@ -27,7 +27,7 @@ class ExperimentRunner
   public:
     static void run(const ExperimentConfig &cfg)
     {
-        std::cout << "\n" << std::string(80, '=') << "\n";
+        std::cout << std::string(80, '=') << "\n";
 
         std::cout << "\nexperiment:\n";
         {
@@ -112,7 +112,17 @@ class ExperimentRunner
         std::cout << "\n" << std::string(80, '-') << "\n\n";
         std::cout << "elapsed_time: " << std::fixed << std::setprecision(2)
                   << elapsed_seconds.count() << " s\n";
-        std::cout << "\n" << std::string(80, '=') << "\n\n";
+
+        std::cout << "\nmetrics:\n";
+        print_config_kv("goodput",
+                        "(total_arrivals - total_drops) / simulation_time");
+        print_config_kv("tail_latency", "percentile_95_latency");
+        print_config_kv("cold_start_rate",
+                        "cold_starts / (cold_starts + warm_starts)");
+        print_config_kv("colocation_probability",
+                        "total_colocations / total_victim_arrivals");
+
+        std::cout << "\n" << std::string(80, '=') << "\n";
     }
 
   private:
@@ -240,10 +250,18 @@ class ExperimentRunner
         const auto &eng = scenario.engine();
         const auto &m = eng.metrics();
 
+        const double simulation_time = eng.now();
+        const double goodput = m.goodput(simulation_time);
+        const double tail_latency = m.tail_latency();
+        const double cold_start_rate = m.cold_start_rate();
+        const double colocation_probability = m.colocation_probability(
+            cfg.attacker_cfg.victims, cfg.attacker_cfg.attacker_tenant);
+
         print_config_kv("scheduler", cfg.scheduler_name);
-        print_config_kv("simulation_time", eng.now());
-        print_config_kv("total_arrivals", m.arrivals_total());
-        print_config_kv("total_drops", m.drops_total());
+        print_config_kv("goodput", goodput);
+        print_config_kv("tail_latency", tail_latency);
+        print_config_kv("cold_start_rate", cold_start_rate);
+        print_config_kv("colocation_probability", colocation_probability);
 
         if (!cfg.results_file.empty())
         {
@@ -262,55 +280,14 @@ class ExperimentRunner
 
             if (write_header)
             {
-                out << "seed,scheduler,num_tenants,num_workers,"
-                    << "mean_service_time,arrival_rate,attacker.enabled,"
-                    << "attacker.intensity,simulation_time,total_arrivals,"
-                    << "total_drops,benign_cold_count,benign_warm_count,"
-                    << "colocation_count,victim_tenant,victim_arrivals,"
-                    << "victim_drops,victim_tail_latency\n";
+                out << "seed,scheduler,workload,num_tenants,num_workers,"
+                    << "tail_latency,cold_start_rate,colocation_probability\n";
             }
-
-            TenantId victim_tenant = 1;
-            if (!cfg.attacker_cfg.victims.empty())
-                victim_tenant = cfg.attacker_cfg.victims.front();
-            const TenantId attacker_tenant = cfg.attacker_cfg.attacker_tenant;
-
-            const auto total_arrivals_all = m.arrivals_total();
-
-            const auto victim_arr = m.arrivals_for_tenant(victim_tenant);
-            const auto victim_drop = m.drops_for_tenant(victim_tenant);
-            const double victim_tail_lat =
-                m.tail_latency_for_tenant(victim_tenant);
-
-            const FunctionId attacker_fid =
-                cfg.attacker_enabled ? cfg.attacker_cfg.attacker_function : 0;
-            std::uint64_t benign_cold = 0;
-            std::uint64_t benign_warm = 0;
-            for (const auto &kv : m.function_cold_starts())
-            {
-                if (cfg.attacker_enabled && kv.first == attacker_fid)
-                    continue;
-                benign_cold += kv.second;
-            }
-            for (const auto &kv : m.function_warm_starts())
-            {
-                if (cfg.attacker_enabled && kv.first == attacker_fid)
-                    continue;
-                benign_warm += kv.second;
-            }
-
-            const std::uint64_t coloc_va =
-                m.colocation_count(victim_tenant, attacker_tenant);
 
             out << cfg.seed << "," << cfg.scheduler_name << ","
-                << cfg.num_tenants << "," << cfg.num_workers << ","
-                << cfg.mean_service_time << "," << cfg.arrival_rate << ","
-                << (cfg.attacker_enabled ? 1 : 0) << ","
-                << cfg.attacker_cfg.intensity << "," << eng.now() << ","
-                << total_arrivals_all << "," << m.drops_total() << ","
-                << benign_cold << "," << benign_warm << "," << coloc_va << ","
-                << victim_tenant << "," << victim_arr << "," << victim_drop
-                << "," << victim_tail_lat << "\n";
+                << cfg.workload_type << "," << cfg.num_tenants << ","
+                << cfg.num_workers << "," << tail_latency << ","
+                << cold_start_rate << "," << colocation_probability << "\n";
         }
     }
 };

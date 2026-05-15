@@ -338,9 +338,6 @@ class Engine
                 " container_lifetime=", container->lifetime_invocations);
         }
 
-        // record actual execution start time for latency
-        metrics_.on_invocation_execute(inv, wid, current_time_);
-
         // Schedule completion after service time.
         TimePoint completion_time = current_time_ + inv.service_time();
         events_.push(Event::invocation_complete(completion_time, inv.id(),

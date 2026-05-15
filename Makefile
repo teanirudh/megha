@@ -1,21 +1,31 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -O2
 
-SOURCE = src/main.cpp
-TARGET = megha
+MAIN = src/main.cpp
+PLOT = src/plot.py
+
+IN_DIR = experiment/input
+OUT_DIR = experiment/output
+
+CONFIGS = $(IN_DIR)/configs.cfg
+TARGET = $(OUT_DIR)/megha.out
+RESULTS = $(OUT_DIR)/results.csv
+LOGS = $(OUT_DIR)/console.log
 
 .PHONY: all build run plot clean
 
-$(TARGET): $(SOURCE)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SOURCE)
+all: build
 
 build: $(TARGET)
 
-run: $(TARGET)
-	cd exp && ../$(TARGET) configs.cfg
+$(TARGET): $(MAIN)
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+run: build
+	stdbuf -oL ./$(TARGET) $(CONFIGS) | tee $(LOGS)
 
 plot:
-	python3 exp/plot.py --csv exp/results.csv --pdf exp/figures.pdf
+	python3 $(PLOT) $(RESULTS)
 
 clean:
-	rm -f $(TARGET) exp/results.csv exp/figures.pdf exp/trace.log
+	rm -f $(TARGET) $(OUT_DIR)/*
