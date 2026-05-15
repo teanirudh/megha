@@ -1,7 +1,7 @@
 # Megha: Serverless Security Simulator
 
-**CS6630: Secure Processor Microarchitecture**
-Anirudh T E · CS25S005 · Jan-May 2026 · IIT Madras
+Anirudh T E · CS25S005
+CS6630: Secure Processor Microarchitecture · Jan-May 2026 · IIT Madras
 
 ## Table of Contents
 
@@ -39,8 +39,6 @@ Serverless computing, or Functions-as-a-Service (FaaS), abstracts cluster manage
 
 Microarchitectural attacks, such as cache timing channels, generally require hardware co-residency. Kumo models co-location at the system level by evaluating whether attacker and victim tenants occupy the same worker during invocation placement. It intentionally omits cycle-accurate cache hierarchies and probe success rates. Megha investigates a complementary hypothesis: lightweight telemetry approximating cache pressure can enable a scheduler to further reduce co-location risks without introducing unacceptable latency overheads.
 
-**Contributions:**
-
 | Component                                                       | Origin             |
 | :-------------------------------------------------------------- | :----------------- |
 | Simulation Engine (`Engine`, `Event`)                           | Adapted from Kumo  |
@@ -54,15 +52,15 @@ Microarchitectural attacks, such as cache timing channels, generally require har
 
 ### 2.1 Serverless Platforms
 
-A serverless platform comprises a pool of shared workers that execute tenant functions on demand via lightweight containers. Upon receiving a function invocation, the platform executes a scheduling decision to assign a worker, initializes or reuses a container, allocates necessary resources, and processes the request. If an idle container for the requested function exists, the invocation utilizes it, resulting in a **warm start**. Otherwise, a new container is initialized, causing a **cold start**. These placement and reuse decisions directly dictate latency, resource utilization efficiency, and tenant isolation.
+A serverless platform comprises a pool of shared workers that execute tenant functions on demand via lightweight containers. Upon receiving a function invocation, the platform executes a scheduling decision to assign a worker, initializes or reuses a container, allocates necessary resources, and processes the request. If an idle container for the requested function exists, the invocation utilizes it, resulting in a warm start. Otherwise, a new container is initialized, causing a cold start. These placement and reuse decisions directly dictate latency, resource utilization efficiency, and tenant isolation.
 
-Because multiple tenants share the same worker infrastructure, serverless platforms are susceptible to **co-location attacks**. Adversaries repeatedly execute controlled functions to maximize the probability of being scheduled on the same worker as a targeted victim tenant. Successful co-location facilitates microarchitectural side-channel attacks that exploit shared hardware resources, particularly the last-level cache (LLC). While attackers lack direct visibility into placement decisions, concurrent residency on shared hardware remains a fundamental prerequisite for these exploits.
+Because multiple tenants share the same worker infrastructure, serverless platforms are susceptible to co-location attacks. Adversaries repeatedly execute controlled functions to maximize the probability of being scheduled on the same worker as a targeted victim tenant. Successful co-location facilitates microarchitectural side-channel attacks that exploit shared hardware resources, particularly the last-level cache (LLC). While attackers lack direct visibility into placement decisions, concurrent residency on shared hardware remains a fundamental prerequisite for these exploits.
 
 ### 2.2 Cache-Aware Scheduling
 
-Existing policies, such as **Random** and **Helper**, optimize for placement diversity, data locality, or tenant distribution, rather than mitigating cache contention. Consequently, a cache-intensive attacker can achieve co-location with victim workloads even when the scheduler actively optimizes for reuse or system-level isolation.
+Existing policies, such as Random and Helper, optimize for placement diversity, data locality, or tenant distribution, rather than mitigating cache contention. Consequently, a cache-intensive attacker can achieve co-location with victim workloads even when the scheduler actively optimizes for reuse or system-level isolation.
 
-Megha evaluates whether lightweight LLC miss-rate telemetry can address this vulnerability when integrated into a tractable event-driven simulation model. The proposed **Guardian** scheduler classifies invocations as _thrash-hot_ or _thrash-cool_. It consolidates hot traffic onto heavily utilized workers while preferentially routing cool victim workloads to untainted workers. The primary hypothesis is that this cache-aware placement strategy substantially reduces attacker-victim co-location probabilities relative to baseline schedulers, while maintaining acceptable cold-start and tail-latency overheads.
+Megha evaluates whether lightweight LLC miss-rate telemetry can address this vulnerability when integrated into a tractable event-driven simulation model. The proposed Guardian scheduler classifies invocations as thrash-hot or thrash-cool. It consolidates hot traffic onto heavily utilized workers while preferentially routing cool victim workloads to untainted workers. The primary hypothesis is that this cache-aware placement strategy substantially reduces attacker-victim co-location probabilities relative to baseline schedulers, while maintaining acceptable cold-start and tail-latency overheads.
 
 ---
 
@@ -233,11 +231,11 @@ The evaluation methodology involves a comparative analysis of the Random, Helper
 
 ### 5.2 Evaluation Criteria
 
-The schedulers are evaluated against three primary metrics, reflecting performance, efficiency, and security:
+Schedulers are evaluated against three metrics, reflecting performance, efficiency, and security:
 
-1.  **Tail Latency:** Measured as the 95th-percentile end-to-end latency experienced by tenant invocations.
-2.  **Cold-start Rate:** Defined as the fraction of total invocations that fail to find a warm container and subsequently incur initialization delays.
-3.  **Co-location Probability:** Calculated as the probability that a victim tenant invocation is scheduled on the same worker as an attacker tenant at the time of placement.
+1. **Tail Latency:** Measured as the 95th-percentile end-to-end latency experienced by tenant invocations.
+2. **Cold-start Rate:** Defined as the fraction of total invocations that fail to find a warm container and subsequently incur initialization delays.
+3. **Co-location Probability:** Calculated as the probability that a victim tenant invocation is scheduled on the same worker as an attacker tenant at the time of placement.
 
 ---
 
@@ -288,11 +286,7 @@ Megha extends the discrete-event serverless simulator, Kumo, by introducing an a
 ## 9. References
 
 1. W. Shao, K. N. Khasawneh, S. Rafatirad, H. Homayoun, and C. Fang, "Kumo: A Security-Focused Serverless Cloud Simulator," 2026.
-
 2. W. Shao et al., "Bit of a Close Talker: A Practical Guide to Serverless Cloud Co-Location Attacks," 2025.
-
 3. Z. N. Zhao, A. Morrison, C. W. Fletcher, and J. Torrellas, "Everywhere All at Once: Co-location Attacks on Public Cloud FaaS," 2024.
-
 4. E. Marin, D. Perino, and R. Di Pietro, "Serverless Computing: A Security Perspective," Journal of Cloud Computing, vol. 11, no. 1, 2022.
-
 5. Kumo artifact repository. (https://github.com/weishao-sec/kumo)
