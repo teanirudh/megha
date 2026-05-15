@@ -33,7 +33,7 @@ CONFIG: tuple[ChartConfig, ...] = (
         column="cold_start_rate",
         ylabel="cold_starts / (cold_starts + warm_starts)",
         title="Efficiency",
-        caption="Cold Start Rate (↓ better)",
+        caption="Cold-start Rate (↓ better)",
         file="experiment/output/fig_efficiency.png",
     ),
     ChartConfig(
