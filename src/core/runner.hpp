@@ -110,7 +110,8 @@ class ExperimentRunner
         std::chrono::duration<double> elapsed_seconds = end - start;
 
         std::cout << "\n" << std::string(80, '-') << "\n\n";
-        std::cout << "elapsed_time: " << elapsed_seconds.count() << "\n";
+        std::cout << "elapsed_time: " << std::fixed << std::setprecision(2)
+                  << elapsed_seconds.count() << " s\n";
         std::cout << "\n" << std::string(80, '=') << "\n\n";
     }
 
@@ -126,14 +127,11 @@ class ExperimentRunner
     static void log_trace_run_header(const ExperimentConfig &cfg)
     {
         if (!TraceLogger::enabled())
-        {
             return;
-        }
-        constexpr std::size_t kLine = 80;
-        TraceLogger::log(std::string(kLine, '='));
+        TraceLogger::log(std::string(80, '='));
         TraceLogger::log("[seed-", cfg.seed, "] ",
                          "scheduler: ", cfg.scheduler_name);
-        TraceLogger::log(std::string(kLine, '='));
+        TraceLogger::log(std::string(80, '='));
     }
 
     static void run_single(const ExperimentConfig &cfg)
@@ -176,13 +174,7 @@ class ExperimentRunner
             f_att.cold_start_time = 10.0;
             f_att.warm_start_time = 1.0;
             f_att.idle_timeout = cfg.idle_timeout;
-            f_att.microarch = MicroarchProfile{
-                .llc_loads_per_cycle = 0.08,
-                .llc_stores_per_cycle = 0.002,
-                .llc_load_misses_per_cycle = 0.05,
-                .llc_store_misses_per_cycle = 0.00001,
-                .instructions_per_cycle = 0.333,
-            };
+            f_att.microarch = MicroarchProfile{0.05, 0.00001};
             ps.add_function(f_att);
         }
 

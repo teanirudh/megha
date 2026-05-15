@@ -14,11 +14,8 @@ namespace megha
  */
 struct MicroarchProfile
 {
-    double llc_loads_per_cycle = 0.0;
-    double llc_stores_per_cycle = 0.0;
     double llc_load_misses_per_cycle = 0.0;
     double llc_store_misses_per_cycle = 0.0;
-    double instructions_per_cycle = 1.0;
 };
 
 /**
@@ -59,13 +56,7 @@ struct FunctionProfile
 
     std::size_t max_concurrency_per_container = 1;
 
-    MicroarchProfile microarch{
-        .llc_loads_per_cycle = 0.03,
-        .llc_stores_per_cycle = 0.01,
-        .llc_load_misses_per_cycle = 0.001,
-        .llc_store_misses_per_cycle = 0.0005,
-        .instructions_per_cycle = 1.0,
-    };
+    MicroarchProfile microarch{0.001, 0.0005};
 };
 
 /**
